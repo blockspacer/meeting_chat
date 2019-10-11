@@ -115,16 +115,25 @@ namespace vi {
 	void MessageTransportor::onTextMessage(const std::string& text)
 	{
 		qDebug() << "MessageTransportor::onTextMessage(), text = " << text.c_str();
+
+		// |unpublished| can be int or string, replace string 'ok' to 0
+		std::string data = text;
+		std::string tag("\"unpublished\": \"ok\"");
+		size_t pos = data.find(tag);
+		if (pos != std::string::npos) {
+			data = data.replace(pos, tag.length(), "\"unpublished\": 0");
+		}
+
 		std::shared_ptr<JanusResponse> model = std::make_shared<JanusResponse>();
 		//JanusResponse  model;
-		x2struct::X::loadjson(text, *model, false, true);
+		x2struct::X::loadjson(data, *model, false, true);
 
 		if (!model->xhas("janus")) {
 			std::cout << "!response->xhas(\"janus\")"  << std::endl;
 			return;
 		}
 		if (model->janus == "event") {
-			std::string x = model->janus;
+			std::string event = model->janus;
 		}
 		if (model->xhas("transaction") && (model->janus == "ack" || model->janus == "success" || model->janus == "error")) {
 			std::lock_guard<std::mutex> locker(_callbackMutex);

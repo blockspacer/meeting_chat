@@ -152,7 +152,7 @@ namespace vi {
 		int64_t id;
 		int64_t private_id;
 		std::vector<PublisherData> publishers;
-		//int64_t unpublished;
+		int64_t unpublished;
 		int64_t leaving;
 		int64_t error_code;
 		std::string audio_codec;
@@ -160,6 +160,7 @@ namespace vi {
 		std::string display;
 		XTOSTRUCT(O(videoroom, room, description, id, private_id, publishers, leaving, error_code, audio_codec, video_codec, display));
 	};
+
 	struct PluginData {
 		std::string plugin;
 		EventData data;

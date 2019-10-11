@@ -14,7 +14,9 @@ namespace vi {
 
 	VideoRoom::~VideoRoom()
 	{
-		_pluginContext->webrtcContext->pc->Close();
+		if (_pluginContext->webrtcContext->pc) {
+			_pluginContext->webrtcContext->pc->Close();
+		}
 	}
 
 	void VideoRoom::onAttached(bool success)
@@ -64,9 +66,9 @@ namespace vi {
 	void VideoRoom::onMessage(const EventData& data, const Jsep& jsep)
 	{
 		qDebug() << " ::: Got a message (publisher).";
-		//if (!data.xhas("videoroom")) {
-		//	return;
-		//}
+		if (!data.xhas("videoroom")) {
+			return;
+		}
 		const auto& event = data.videoroom;
 		if (event == "joined") {
 			// Publisher/manager created, negotiate WebRTC and attach to existing feeds, if any
@@ -75,20 +77,18 @@ namespace vi {
 			qDebug() <<"Successfully joined room " << data.room <<  " with ID " << _id;
 
 			// TODO:
-			//publishOwnFeed(true);
 			publishOwnStream(true);
 
 			// Any new feed to attach to
-			//if (data.xhas("publishers")) {
+			if (data.xhas("publishers")) {
 				const auto& publishers = data.publishers;
 				qDebug() << "Got a list of available publishers/feeds:";
 				for (const auto& pub : publishers) {
 					qDebug() << "  >> [" << pub.id << "] " << pub.display.c_str() << " (audio: " << pub.audio_codec.c_str() << ", video: " << pub.video_codec.c_str() << ")";
 					// TODO:
-					//newRemoteFeed(pub.id, pub.display, pub.audio_codec, pub.video_codec);
 					//createParticipant(pub.id, pub.display, pub.audio_codec, pub.video_codec);
 				}
-			//}
+			}
 		}
 		else if (event == "destroyed") {
 			qWarning() << "The room has been destroyed!";
@@ -101,7 +101,6 @@ namespace vi {
 				for (const auto& pub : publishers) {
 					qDebug() << "  >> [" << pub.id << "] " << pub.display.c_str() << " (audio: " << pub.audio_codec.c_str() << ", video: " << pub.video_codec.c_str() << ")";
 					// TODO:
-					//newRemoteFeed(pub.id, pub.display, pub.audio_codec, pub.video_codec);
 					createParticipant(pub.id, pub.display, pub.audio_codec, pub.video_codec);
 				}
 			}
@@ -111,15 +110,15 @@ namespace vi {
 			// TODO: Figure out the participant and detach it
 		}
 		else if (event == "unpublished") {
-			//const auto& unpublished = data.unpublished;
-			//qDebug() << "Publisher left: " + unpublished;
+			const auto& unpublished = data.unpublished;
+			qDebug() << "Publisher left: " << unpublished;
 
 			// TODO: |unpublished| can be int or string
-			//if (unpublished == 'ok') {
-			//	// That's us
-			//	this->hangup(true);
-			//	return;
-			//}
+			if (unpublished == 0) {
+				// That's us
+				this->hangup(true);
+				return;
+			}
 
 			// TODO: Figure out the participant and detach it
 			//remoteFeed.detach();

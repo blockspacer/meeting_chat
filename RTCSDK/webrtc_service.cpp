@@ -981,8 +981,11 @@ namespace vi {
 			const auto& plugindata = model->plugindata;
 
 			qDebug() << " -- Event is coming from " << sender << " (" << plugindata.plugin.c_str() << ")";
-			const auto& data = plugindata.data;
-			
+
+			std::string dataString = x2struct::X::tojson(plugindata.data);
+			EventData data;
+			x2struct::X::loadjson(dataString, data, false, true);
+
 			Jsep jsep;
 			if (model->xhas("jsep")) {
 				qDebug() << "Handling SDP as well...";

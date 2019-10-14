@@ -2,7 +2,7 @@
 
 #include <string>
 #include <functional>
-#include "i_message_transportor.h"
+#include "i_message_transport.h"
 #include "i_sfu_client_listener.h"
 
 namespace vi {

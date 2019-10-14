@@ -1,6 +1,6 @@
 #include "Janus_client.h"
 #include <iostream>
-#include <message_transportor.h>
+#include "message_transport.h"
 #include "message_models.h"
 #include "x2struct.hpp"
 #include "string_utils.h"
@@ -11,7 +11,7 @@ namespace vi {
 	JanusClient::JanusClient(const std::string& url)
 		: _url(url)
 	{
-		_transportor = std::make_shared<MessageTransportor>(_url);
+		_transport = std::make_shared<MessageTransport>(_url);
 	}
 
 	JanusClient::~JanusClient()
@@ -41,8 +41,8 @@ namespace vi {
 
 	void JanusClient::init() 
 	{
-		_transportor->addListener(shared_from_this());
-		_transportor->connect(_url);
+		_transport->addListener(shared_from_this());
+		_transport->connect(_url);
 	}
 
 	void JanusClient::createSession(std::shared_ptr<JCCallback> callback) 
@@ -57,7 +57,7 @@ namespace vi {
 
 		std::string data = x2struct::X::tojson(request);
 
-		_transportor->send(data, handler);
+		_transport->send(data, handler);
 	}
 
 	void JanusClient::destroySession(int64_t sessionId, std::shared_ptr<JCCallback> callback) 
@@ -73,7 +73,7 @@ namespace vi {
 
 		std::string data = x2struct::X::tojson(request);
 
-		_transportor->send(data, handler);
+		_transport->send(data, handler);
 	}
 
 	void JanusClient::reconnectSession(int64_t sessionId, std::shared_ptr<JCCallback> callback) 
@@ -89,7 +89,7 @@ namespace vi {
 
 		std::string data = x2struct::X::tojson(request);
 
-		_transportor->send(data, handler);
+		_transport->send(data, handler);
 	}
 
 	void JanusClient::keepAlive(int64_t sessionId, std::shared_ptr<JCCallback> callback) 
@@ -105,7 +105,7 @@ namespace vi {
 
 		std::string data = x2struct::X::tojson(request);
 
-		_transportor->send(data, handler);
+		_transport->send(data, handler);
 	}
 
 	void JanusClient::attach(int64_t sessionId, const std::string& plugin, const std::string& opaqueId, std::shared_ptr<JCCallback> callback)
@@ -123,7 +123,7 @@ namespace vi {
 
 		std::string data = x2struct::X::tojson(request);
 
-		_transportor->send(data, handler);
+		_transport->send(data, handler);
 	}
 
 	void JanusClient::detach(int64_t sessionId, int64_t handleId, std::shared_ptr<JCCallback> callback) 
@@ -140,7 +140,7 @@ namespace vi {
 
 		std::string data = x2struct::X::tojson(request);
 
-		_transportor->send(data, handler);
+		_transport->send(data, handler);
 	}
 
 	void JanusClient::sendMessage(int64_t sessionId, int64_t handleId, const std::string& message, const std::string& jsep, std::shared_ptr<JCCallback> callback)
@@ -165,7 +165,7 @@ namespace vi {
 				data = data.replace(pos, tag.length(), message);
 			}
 			qDebug() << "after replace, data = " << data.c_str();
-			_transportor->send(data, handler);
+			_transport->send(data, handler);
 		}
 		else {
 			JsepRequest request;
@@ -199,7 +199,7 @@ namespace vi {
 
 			qDebug() << "after replace, data = " << data.c_str();
 
-			_transportor->send(data, handler);
+			_transport->send(data, handler);
 		}
 	}
 
@@ -218,7 +218,7 @@ namespace vi {
 
 		std::string data = x2struct::X::tojson(request);
 
-		_transportor->send(data, handler);
+		_transport->send(data, handler);
 	}
 
 	void JanusClient::hangup(int64_t sessionId, int64_t handleId, std::shared_ptr<JCCallback> callback) 
@@ -235,7 +235,7 @@ namespace vi {
 
 		std::string data = x2struct::X::tojson(request);
 
-		_transportor->send(data, handler);
+		_transport->send(data, handler);
 	}
 
 	void JanusClient::onOpened()

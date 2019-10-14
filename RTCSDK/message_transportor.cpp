@@ -1,4 +1,4 @@
-#include "message_transportor.h"
+#include "message_transport.h"
 #include <iostream>
 #include "Websocket/i_connection_listener.h"
 #include "Websocket/websocket_endpoint.h"
@@ -6,7 +6,7 @@
 #include <QDebug>
 
 namespace vi {
-	MessageTransportor::MessageTransportor(const std::string& url)
+	MessageTransport::MessageTransport(const std::string& url)
 		: _url(url)
 	{
 		_websocket = std::make_shared<WebsocketEndpoint>();
@@ -15,12 +15,12 @@ namespace vi {
 		}
 	}
 
-	MessageTransportor::~MessageTransportor()
+	MessageTransport::~MessageTransport()
 	{
 
 	}
 
-	bool MessageTransportor::isValid()
+	bool MessageTransport::isValid()
 	{
 		if (_websocket && _connectionId != -1) {
 			return true;
@@ -29,33 +29,33 @@ namespace vi {
 	}
 
 	// IMessageTransportor
-	void MessageTransportor::addListener(std::shared_ptr<IMessageTransportListener> listener)
+	void MessageTransport::addListener(std::shared_ptr<IMessageTransportListener> listener)
 	{
 		std::lock_guard<std::mutex> locker(_listenerMutex);
 		addBizObserver<IMessageTransportListener>(_listeners, listener);
 	}
 
-	void MessageTransportor::removeListener(std::shared_ptr<IMessageTransportListener> listener)
+	void MessageTransport::removeListener(std::shared_ptr<IMessageTransportListener> listener)
 	{
 		std::lock_guard<std::mutex> locker(_listenerMutex);
 		removeBizObserver<IMessageTransportListener>(_listeners, listener);
 	}
 
-	void MessageTransportor::connect(const std::string& url)
+	void MessageTransport::connect(const std::string& url)
 	{
 		if (_websocket) {
 			_connectionId = _websocket->connect(_url, shared_from_this(), "janus-protocol");
 		}
 	}
 
-	void MessageTransportor::disconnect()
+	void MessageTransport::disconnect()
 	{
 		if (isValid()) {
 			_websocket->close(_connectionId, websocketpp::close::status::normal, "");
 		}
 	}
 
-	void MessageTransportor::send(const std::string& data, std::shared_ptr<JCHandler> handler)
+	void MessageTransport::send(const std::string& data, std::shared_ptr<JCHandler> handler)
 	{
 		if (isValid()) {
 			_websocket->sendText(_connectionId, data);
@@ -67,7 +67,7 @@ namespace vi {
 		}
 	}
 
-	void MessageTransportor::send(const std::vector<uint8_t>& data, std::shared_ptr<JCHandler> handler)
+	void MessageTransport::send(const std::vector<uint8_t>& data, std::shared_ptr<JCHandler> handler)
 	{
 		if (isValid()) {
 			_websocket->sendBinary(_connectionId, data);
@@ -79,7 +79,7 @@ namespace vi {
 	}
 
 	// IConnectionListener
-	void MessageTransportor::onOpen()
+	void MessageTransport::onOpen()
 	{
 		qDebug() << "MessageTransportor::onOpen()";
 		std::lock_guard<std::mutex> locker(_listenerMutex);
@@ -90,12 +90,12 @@ namespace vi {
 		}
 	}
 
-	void MessageTransportor::onFail(int errorCode, const std::string& reason)
+	void MessageTransport::onFail(int errorCode, const std::string& reason)
 	{
 		qDebug() << "MessageTransportor::onFail(), errorCode = " << errorCode << ", reason = " << reason.c_str();
 	}
 
-	void MessageTransportor::onClose(int closeCode, const std::string& reason)
+	void MessageTransport::onClose(int closeCode, const std::string& reason)
 	{
 		qDebug() << "MessageTransportor::onClose(), errorCode = " << closeCode << ", reason = " << reason.c_str();
 		std::lock_guard<std::mutex> locker(_listenerMutex);
@@ -106,13 +106,13 @@ namespace vi {
 		}
 	}
 
-	bool MessageTransportor::onValidate()
+	bool MessageTransport::onValidate()
 	{
 		qDebug() << "MessageTransportor::onValidate()";
 		return true;
 	}
 
-	void MessageTransportor::onTextMessage(const std::string& text)
+	void MessageTransport::onTextMessage(const std::string& text)
 	{
 		qDebug() << "MessageTransportor::onTextMessage(), text = " << text.c_str();
 
@@ -156,23 +156,23 @@ namespace vi {
 		}
 	}
 
-	void MessageTransportor::onBinaryMessage(const std::vector<uint8_t>& data)
+	void MessageTransport::onBinaryMessage(const std::vector<uint8_t>& data)
 	{
 		qDebug() << "MessageTransportor::onBinaryMessage(), data.size() = " << data.size();
 	}
 
-	bool MessageTransportor::onPing(const std::string& text)
+	bool MessageTransport::onPing(const std::string& text)
 	{
 		qDebug() << "MessageTransportor::onPing(), text = " << text.c_str();
 		return true;
 	}
 
-	void MessageTransportor::onPong(const std::string& text)
+	void MessageTransport::onPong(const std::string& text)
 	{
 		qDebug() << "MessageTransportor::onPong(), text = " << text.c_str();
 	}
 
-	void MessageTransportor::onPongTimeout(const std::string& text)
+	void MessageTransport::onPongTimeout(const std::string& text)
 	{
 		qDebug() << "MessageTransportor::onPongTimeout(), text = " << text.c_str();
 	}

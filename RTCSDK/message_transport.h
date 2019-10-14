@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <thread>
-#include "i_message_transportor.h"
+#include "i_message_transport.h"
 #include <unordered_map>
 #include "Websocket/i_connection_listener.h"
 #include "Websocket/websocket_endpoint.h"
@@ -10,15 +10,15 @@
 
 namespace vi {
 	class IMessageTransportListener;
-	class MessageTransportor
-		: public IMessageTransportor
+	class MessageTransport
+		: public IMessageTransport
 		, public IConnectionListener
 		, public core::Observable
-		, public std::enable_shared_from_this<MessageTransportor>
+		, public std::enable_shared_from_this<MessageTransport>
 	{
 	public:
-		MessageTransportor(const std::string& url);
-		~MessageTransportor() override;
+		MessageTransport(const std::string& url);
+		~MessageTransport() override;
 
 		// IMessageTransportor
 

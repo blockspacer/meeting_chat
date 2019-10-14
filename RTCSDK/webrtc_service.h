@@ -45,9 +45,6 @@ namespace vi {
 
 		void reconnect() override;
 
-
-		int32_t getVolume(int64_t handleId, bool isRemote);
-
 		int32_t getRemoteVolume(int64_t handleId) override;
 
 		int32_t getLocalVolume(int64_t handleId) override;
@@ -55,8 +52,6 @@ namespace vi {
 		bool isAudioMuted(int64_t handleId) override;
 
 		bool isVideoMuted(int64_t handleId) override;
-
-		bool isMuted(int64_t handleId, bool isVideo);
 
 		bool muteAudio(int64_t handleId) override;
 
@@ -66,8 +61,6 @@ namespace vi {
 
 		bool unmuteVideo(int64_t handleId) override;
 
-		bool mute(int64_t handleId, bool isVideo, bool mute);
-
 		std::string getBitrate(int64_t handleId) override;
 
 		void sendMessage(int64_t handleId, std::shared_ptr<SendMessageHandler> handler) override;
@@ -76,18 +69,14 @@ namespace vi {
 
 		void sendDtmf(int64_t handleId, std::shared_ptr<SendDtmfHandler> handler) override;
 
-		void prepareWebrtc(int64_t handleId, bool isOffer, std::shared_ptr<PrepareWebRTCHandler> handler);
 		void createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler) override;
 
 		void createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler) override;
 
-		void prepareWebrtcPeer(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerHandler> handler);
 		void handleRemoteJsep(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerHandler> handler) override;
 
-		void cleanupWebrtc(int64_t handleId, bool sendRequest = true);
 		void hangup(int64_t handleId, bool sendRequest) override;
 
-		void destroyHandle(int64_t handleId, std::shared_ptr<DetachHandler> handler);
 		void detach(int64_t handleId, std::shared_ptr<DetachHandler> handler) override;
 
 	protected:
@@ -104,15 +93,28 @@ namespace vi {
 		void heartbeat();
 
 	private:
+		int32_t getVolume(int64_t handleId, bool isRemote);
+
+		bool isMuted(int64_t handleId, bool isVideo);
+
+		bool mute(int64_t handleId, bool isVideo, bool mute);
+
+		void prepareWebrtc(int64_t handleId, bool isOffer, std::shared_ptr<PrepareWebRTCHandler> handler);
+
+		void prepareWebrtcPeer(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerHandler> handler);
+
+		void cleanupWebrtc(int64_t handleId, bool sendRequest = true);
+
+		void destroyHandle(int64_t handleId, std::shared_ptr<DetachHandler> handler);
+
+	private:
 		void createSession(std::shared_ptr<CreateSessionHandler> handler);
 
 		void startHeartbeat();
 
 		std::shared_ptr<IWebRTCEventHandler> getHandler(int64_t handleId);
 
-		void prepareStreams(int64_t handleId, 
-			std::shared_ptr<PrepareWebRTCHandler> handler,
-			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
+		void prepareStreams(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
 
 		void sendSDP(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler);
 

@@ -25,9 +25,9 @@ namespace vi {
 		std::shared_ptr<JCCallback> callback;
 	};
 
-	class IMessageTransportor {
+	class IMessageTransport {
 	public:
-		virtual ~IMessageTransportor() {}
+		virtual ~IMessageTransport() {}
 
 		virtual void addListener(std::shared_ptr<IMessageTransportListener> listener) = 0;
 

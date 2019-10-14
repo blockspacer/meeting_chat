@@ -62,7 +62,7 @@ namespace vi {
 		std::string _url;
 		std::string _token;
 		std::string _apisecret;
-		std::shared_ptr<IMessageTransportor> _transportor;
+		std::shared_ptr<IMessageTransport> _transport;
 		std::vector<std::weak_ptr<ISFUClientListener>> _listeners;
 	};
 }

@@ -114,8 +114,6 @@
     <ClCompile Include="webrtc_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\UI\conductor.h" />
-    <ClInclude Include="..\UI\defaults.h" />
     <ClInclude Include="callback_handlers.h" />
     <ClInclude Include="helper_utils.h" />
     <ClInclude Include="i_message_transport_listener.h" />
@@ -126,10 +124,10 @@
     <ClInclude Include="i_webrtc_service.h" />
     <ClInclude Include="i_webrtc_service_listener.h" />
     <ClInclude Include="janus_client.h" />
-    <ClInclude Include="i_message_transportor.h" />
+    <ClInclude Include="i_message_transport.h" />
     <ClInclude Include="local_video_capture.h" />
     <ClInclude Include="message_models.h" />
-    <ClInclude Include="message_transportor.h" />
+    <ClInclude Include="message_transport.h" />
     <ClInclude Include="participant.h" />
     <ClInclude Include="plugin_client.h" />
     <ClInclude Include="plugin_context.h" />

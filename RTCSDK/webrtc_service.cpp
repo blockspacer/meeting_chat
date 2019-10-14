@@ -73,6 +73,14 @@ namespace vi {
 
 	void WebRTCService::cleanup()
 	{
+		auto handler = std::make_shared<DestroySessionHandler>();
+		handler->notifyDestroyed = true;
+		handler->cleanupHandles = true;
+		handler->callback = std::make_shared<HandlerCallback>([](bool success, const std::string& reason) {
+			qDebug() << "destroy, success = " << success << ", reason = " << reason.c_str();
+		});
+		this->destroy(handler);
+		_pcf = nullptr;
 	}
 
 	// IWebRTCService implement
@@ -792,7 +800,6 @@ namespace vi {
 		}
 		if (handler->noRequest) {
 			// We're only removing the handle locally
-			_wrehs.erase(handleId);
 			if (handler->callback) {
 				const auto& cb = handler->callback;
 				(*cb)(true, "");
@@ -813,7 +820,6 @@ namespace vi {
 		};
 		std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
 		_sfuClient->detach(_sessionId, handleId, callback);
-		const auto& context = wreh->pluginContext()->webrtcContext;
 	}
 
 	void WebRTCService::detach(int64_t handleId, std::shared_ptr<DetachHandler> handler) 
@@ -1594,7 +1600,8 @@ namespace vi {
 				sender->SetParameters(params);
 			}
 		}
-		context->createOfferObserver.reset(new rtc::RefCountedObject<CreateSessionDescObserver>());
+		std::unique_ptr<CreateSessionDescObserver> createOfferObserver;
+		createOfferObserver.reset(new rtc::RefCountedObject<CreateSessionDescObserver>());
 
 		std::shared_ptr<CreateSessionDescSuccessCallback> success = std::make_shared<CreateSessionDescSuccessCallback>([handler, context, options](webrtc::SessionDescriptionInterface* desc) {
 			if (!desc) {
@@ -1637,10 +1644,10 @@ namespace vi {
 			}
 		});
 
-		context->createOfferObserver->setSuccessCallback(success);
-		context->createOfferObserver->setFailureCallback(failure);
+		createOfferObserver->setSuccessCallback(success);
+		createOfferObserver->setFailureCallback(failure);
 
-		context->pc->CreateOffer(context->createOfferObserver.get(), options);
+		context->pc->CreateOffer(createOfferObserver.release(), options);
 	}
 
 	void WebRTCService::_createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler)
@@ -1704,7 +1711,8 @@ namespace vi {
 				sender->SetParameters(params);
 			}
 		}
-		context->createAnswerObserver.reset(new rtc::RefCountedObject<CreateSessionDescObserver>());
+		std::unique_ptr<CreateSessionDescObserver> createAnswerObserver;
+		createAnswerObserver.reset(new rtc::RefCountedObject<CreateSessionDescObserver>());
 
 		std::shared_ptr<CreateSessionDescSuccessCallback> success = std::make_shared<CreateSessionDescSuccessCallback>([handler, context, options](webrtc::SessionDescriptionInterface* desc) {
 			if (!desc) {
@@ -1746,10 +1754,10 @@ namespace vi {
 			}
 		});
 
-		context->createAnswerObserver->setSuccessCallback(success);
-		context->createAnswerObserver->setFailureCallback(failure);
+		createAnswerObserver->setSuccessCallback(success);
+		createAnswerObserver->setFailureCallback(failure);
 
-		context->pc->CreateAnswer(context->createAnswerObserver.get(), options);
+		context->pc->CreateAnswer(createAnswerObserver.release(), options);
 	}
 
 	void WebRTCService::destroySession(std::shared_ptr<DestroySessionHandler> handler)
@@ -1774,14 +1782,15 @@ namespace vi {
 			for (auto pair : _wrehs) {
 				std::shared_ptr<DetachHandler> dh = std::make_shared<DetachHandler>();
 				dh->noRequest = true;
-				auto lambda = [](bool success, const std::string& message) {
-					std::string text = message;
-
+				int64_t hId = pair.first;
+				auto lambda = [hId](bool success, const std::string& message) {
+					qDebug() << "destroyHandle, handleId = " << hId << ", success = " << success << ", message = " << message.c_str();
 				};
 				dh->callback = std::make_shared<vi::HandlerCallback>(lambda);
-				destroyHandle(pair.first, dh);
-				//_sfuClient->removeListener(shared_from_this());
+				destroyHandle(hId, dh);
 			}
+			//_sfuClient->removeListener(shared_from_this());
+			_wrehs.clear();
 		}
 		if (!_connected) {
 			qDebug() << "Is the server down? (connected=false)";

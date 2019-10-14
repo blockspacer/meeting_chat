@@ -30,7 +30,8 @@ void AppInstance::initApp()
 
 void AppInstance::clearnup()
 {
-
+	auto wrs = FetchService(vi::IWebRTCService);
+	wrs->cleanup();
 }
 
 std::shared_ptr<IUnifiedFactory> AppInstance::getUnifiedFactory()

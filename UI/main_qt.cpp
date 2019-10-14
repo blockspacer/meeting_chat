@@ -62,14 +62,14 @@ int main(int argc, char *argv[])
 {
 	registerMetaTypes();
 
-	QApplication a(argc, argv);
-
-	rtc::InitializeSSL();
-
 	rtc::WinsockInitializer winsock_init;
 	rtc::Win32SocketServer w32_ss;
 	rtc::Win32Thread w32_thread(&w32_ss);
 	rtc::ThreadManager::Instance()->SetCurrentThread(&w32_thread);
+
+	rtc::InitializeSSL();
+
+	QApplication a(argc, argv);
 
 	XApp->initApp();
 
@@ -81,11 +81,9 @@ int main(int argc, char *argv[])
 
 	int ret = a.exec();
 
-	rtc::CleanupSSL();
-
 	XApp->clearnup();
 
-	rtc::ThreadManager::Instance()->CurrentThread()->Quit();
+	rtc::CleanupSSL();
 
 	return ret;
 }

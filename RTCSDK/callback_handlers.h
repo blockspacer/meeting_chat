@@ -103,7 +103,6 @@ namespace vi {
 	public:
 		bool notifyDestroyed;
 		bool cleanupHandles;
-		std::string jsep;
 		std::shared_ptr<HandlerCallback> callback;
 	};
 }

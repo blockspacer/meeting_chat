@@ -14,7 +14,7 @@
 
 namespace vi {
 
-	struct WebwebrtcContext {
+	struct WebrtcContext {
 		std::atomic_bool started = false;
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> myStream;
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> remoteStream;
@@ -31,8 +31,6 @@ namespace vi {
 		std::atomic_bool iceDone = false;
 		std::atomic_bool sdpSent = false;
 		std::vector<std::shared_ptr<webrtc::IceCandidateInterface>> candidates;
-		std::unique_ptr<CreateSessionDescObserver> createOfferObserver;
-		std::unique_ptr<CreateSessionDescObserver> createAnswerObserver;
 	};
 
 	struct PluginContext {
@@ -42,11 +40,11 @@ namespace vi {
 		int64_t handleId;
 		std::string handleToken;
 		std::atomic_bool detached = false;
-		std::shared_ptr<WebwebrtcContext> webrtcContext;
+		std::shared_ptr<WebrtcContext> webrtcContext;
 
 		PluginContext()
 		{
-			webrtcContext = std::make_shared<WebwebrtcContext>();
+			webrtcContext = std::make_shared<WebrtcContext>();
 		}
 	};
 }

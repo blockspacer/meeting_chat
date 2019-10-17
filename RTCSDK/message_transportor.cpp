@@ -139,11 +139,11 @@ namespace vi {
 			std::lock_guard<std::mutex> locker(_callbackMutex);
 			const std::string& transaction = model->transaction;
 			if (_callbacksMap.find(transaction) != _callbacksMap.end()) {
-				const auto& callback = _callbacksMap[transaction];
+				std::shared_ptr<JCCallback> callback = _callbacksMap[transaction];
+				_callbacksMap.erase(transaction);
 				if (callback) {
 					(*callback)(model);
 				}
-				_callbacksMap.erase(transaction);
 			}
 		}
 		else {

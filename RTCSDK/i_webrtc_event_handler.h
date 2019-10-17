@@ -26,7 +26,7 @@ namespace vi {
 
 		virtual void onWebrtcState(bool isActive, const std::string& reason) = 0;
 
-		virtual void onSlowLink(const std::string& type, bool lost) = 0;
+		virtual void onSlowLink(bool uplink, bool lost) = 0;
 
 		virtual void onMessage(const EventData& data, const Jsep& jsep) = 0;
 

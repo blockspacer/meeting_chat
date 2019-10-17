@@ -844,19 +844,6 @@ namespace vi {
 
 	}
 
-	std::shared_ptr<IWebRTCEventHandler> WebRTCService::getHandler(int64_t handleId)
-	{
-		if (handleId == -1) {
-			qDebug() << "Missing sender...";
-			return nullptr;
-		}
-		if (_wrehs.find(handleId) == _wrehs.end()) {
-			qDebug() << "This handle is not attached to this session";
-			return nullptr;
-		}
-		return _wrehs[handleId];
-	}
-
 	void WebRTCService::onMessage(std::shared_ptr<JanusResponse> model)
 	{
 		int32_t retries = 0;
@@ -1066,6 +1053,19 @@ namespace vi {
 				self->_heartbeatTimer->start(5000);
 			}
 		});
+	}
+
+	std::shared_ptr<IWebRTCEventHandler> WebRTCService::getHandler(int64_t handleId)
+	{
+		if (handleId == -1) {
+			qDebug() << "Missing sender...";
+			return nullptr;
+		}
+		if (_wrehs.find(handleId) == _wrehs.end()) {
+			qDebug() << "This handle is not attached to this session";
+			return nullptr;
+		}
+		return _wrehs[handleId];
 	}
 
 	void WebRTCService::prepareStreams(int64_t handleId,

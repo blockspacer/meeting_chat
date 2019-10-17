@@ -6,6 +6,7 @@
 #include "notification_service.h"
 #include "Thread/task_scheduler_manager.h"
 #include "webrtc_service.h"
+#include "webrtc_service_proxy.h"
 
 namespace core {
 
@@ -60,6 +61,10 @@ void AppInstance::installBizServices()
 
 	auto ws = std::make_shared<vi::WebRTCService>(uf);
 	ws->init();
+
+	//std::unique_ptr<vi::WebRTCService> uws;
+	//uws.reset(new vi::WebRTCService(uf));
+	//webrtc::WebRTCServiceProxy::Create(nullptr, nullptr, std::move(uws));
 }
 
 }

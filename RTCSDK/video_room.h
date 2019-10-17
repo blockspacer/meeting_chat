@@ -22,7 +22,7 @@ namespace vi {
 
 		void onWebrtcState(bool isActive, const std::string& reason) override;
 
-		void onSlowLink(const std::string& type, bool lost) override;
+		void onSlowLink(bool uplink, bool lost) override;
 
 		void onMessage(const EventData& data, const Jsep& jsep) override;
 

@@ -147,6 +147,7 @@
     <ClInclude Include="Service\unified_factory.h" />
     <ClInclude Include="string_utils.h" />
     <ClInclude Include="video_room.h" />
+    <ClInclude Include="webrtc_service_proxy.h" />
     <ClInclude Include="webrtc_utils.h" />
     <QtMoc Include="webrtc_service.h" />
   </ItemGroup>

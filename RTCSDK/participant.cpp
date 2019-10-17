@@ -1,5 +1,6 @@
 #include "participant.h"
 #include <QDebug>
+#include "Thread/async.h"
 
 namespace vi {
 	Participant::Participant(const std::string& plugin, 
@@ -42,7 +43,13 @@ namespace vi {
 				std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
 				handler->message = x2struct::X::tojson(request);
 				handler->callback = callback;
-				sendMessage(handler);
+				auto wself = std::weak_ptr<PluginClient>(shared_from_this());
+				core::Async::dispatchToMain([wself, handler]() {
+					if (auto self = wself.lock()) {
+						self->sendMessage(handler);
+					}
+				});
+				//sendMessage(handler);
 			}
 		}
 		else {
@@ -61,7 +68,7 @@ namespace vi {
 		qDebug() << "Janus says this WebRTC PeerConnection (feed #" << _id << ") is " << (isActive ? "up" : "down") << " now";
 	}
 
-	void Participant::onSlowLink(const std::string& type, bool lost) {}
+	void Participant::onSlowLink(bool uplink, bool lost) {}
 
 	void Participant::onMessage(const EventData& data, const Jsep& jsep)
 	{

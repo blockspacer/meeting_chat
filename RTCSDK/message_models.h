@@ -181,7 +181,7 @@ namespace vi {
 		std::string reason;
 		std::string type;
 		bool receiving;
-		std::string uplink;
+		bool uplink;
 		bool lost;
 		PluginData plugindata;
 		JanusError error;

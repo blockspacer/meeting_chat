@@ -61,7 +61,7 @@ namespace vi {
 		unmuteVideo();
 	}
 
-	void VideoRoom::onSlowLink(const std::string& type, bool lost) {}
+	void VideoRoom::onSlowLink(bool uplink, bool lost) {}
 
 	void VideoRoom::onMessage(const EventData& data, const Jsep& jsep)
 	{
@@ -86,7 +86,7 @@ namespace vi {
 				for (const auto& pub : publishers) {
 					qDebug() << "  >> [" << pub.id << "] " << pub.display.c_str() << " (audio: " << pub.audio_codec.c_str() << ", video: " << pub.video_codec.c_str() << ")";
 					// TODO:
-					//createParticipant(pub.id, pub.display, pub.audio_codec, pub.video_codec);
+					createParticipant(pub.id, pub.display, pub.audio_codec, pub.video_codec);
 				}
 			}
 		}
@@ -241,11 +241,11 @@ namespace vi {
 	void VideoRoom::createParticipant(int64_t id, const std::string& displayName, const std::string& audio, const std::string& video)
 	{
 		auto participant = std::make_shared<Participant>(_pluginContext->plugin, 
-			_pluginContext->opaqueId, 
-			id,
-			_privateId,
-			displayName,
-			_pluginContext->webrtcService.lock());
+														 _pluginContext->opaqueId, 
+														 id,
+														 _privateId,
+														 displayName,
+														 _pluginContext->webrtcService.lock());
 
 		participant->attach();
 	}

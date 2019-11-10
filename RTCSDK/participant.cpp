@@ -142,11 +142,8 @@ namespace vi {
 
 	void Participant::onRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) 
 	{
-		if (_pluginContext) {
-			_pluginContext->webrtcContext->myStream = stream;
-		}
-
 		// TODO: render
+		//stream->GetVideoTracks()[0]->AddOrUpdateSink()
 	}
 
 	void Participant::onData(const std::string& data, const std::string& label) {}

@@ -12,6 +12,7 @@
 #include "Thread/task_scheduler_manager.h"
 #include "Service/app_instance.h"
 #include "i_webrtc_service.h"
+#include <QSurfaceFormat>
 
 using namespace core;
 
@@ -57,6 +58,14 @@ static void registerMetaTypes()
 	qRegisterMetaType<std::shared_ptr<ITask>>("std::shared_ptr<ITask>");
 }
 
+static void initOpenGL() {
+	QSurfaceFormat format;
+	format.setDepthBufferSize(24);
+	format.setStencilBufferSize(8);
+	format.setVersion(4, 5);
+	format.setProfile(QSurfaceFormat::CoreProfile);
+	QSurfaceFormat::setDefaultFormat(format);
+}
 
 int main(int argc, char *argv[])
 {
@@ -70,6 +79,8 @@ int main(int argc, char *argv[])
 	rtc::InitializeSSL();
 
 	QApplication a(argc, argv);
+
+	initOpenGL();
 
 	XApp->initApp();
 

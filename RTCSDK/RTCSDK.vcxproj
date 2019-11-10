@@ -97,7 +97,10 @@
     </QtMoc>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="gl_video_renderer.cpp" />
+    <ClCompile Include="gl_video_shader.cpp" />
     <ClCompile Include="helper_utils.cpp" />
+    <ClCompile Include="i420_texture_cache.cpp" />
     <ClCompile Include="janus_client.cpp" />
     <ClCompile Include="local_video_capture.cpp" />
     <ClCompile Include="message_transportor.cpp" />
@@ -115,7 +118,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="callback_handlers.h" />
+    <QtMoc Include="gl_video_renderer.h" />
+    <ClInclude Include="gl_video_shader.h" />
+    <ClInclude Include="gl_defines.h" />
     <ClInclude Include="helper_utils.h" />
+    <ClInclude Include="i420_texture_cache.h" />
     <ClInclude Include="i_message_transport_listener.h" />
     <ClInclude Include="i_plugin_client.h" />
     <ClInclude Include="i_sfu_client.h" />
@@ -150,8 +157,6 @@
     <ClInclude Include="webrtc_service_proxy.h" />
     <ClInclude Include="webrtc_utils.h" />
     <QtMoc Include="webrtc_service.h" />
-  </ItemGroup>
-  <ItemGroup>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

@@ -3,20 +3,20 @@
 
 I420TextureCache::I420TextureCache()
 {
-#if TARGET_OS_IPHONE
-	_hasUnpackRowLength = (context.API == kEAGLRenderingAPIOpenGLES3);
-#else
-	_hasUnpackRowLength = true;
-#endif
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	setupTextures();
 }
 
 
 I420TextureCache::~I420TextureCache()
 {
 	glDeleteTextures(kNumTextures, _textures);
+}
+
+void I420TextureCache::init()
+{
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	setupTextures();
 }
 
 GLuint I420TextureCache::yTexture() 
@@ -52,32 +52,34 @@ void I420TextureCache::uploadPlane(const uint8_t* plane, GLuint texture, size_t 
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	const uint8_t *uploadPlane = plane;
-	if ((size_t)stride != width) {
-		if (_hasUnpackRowLength) {
-			// GLES3 allows us to specify stride.
-			glPixelStorei(GL_UNPACK_ROW_LENGTH, stride);
-			glTexImage2D(GL_TEXTURE_2D,
-				0,
-				RTC_PIXEL_FORMAT,
-				static_cast<GLsizei>(width),
-				static_cast<GLsizei>(height),
-				0,
-				RTC_PIXEL_FORMAT,
-				GL_UNSIGNED_BYTE,
-				uploadPlane);
-			glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-			return;
-		}
-		else {
-			// Make an unpadded copy and upload that instead. Quick profiling showed
-			// that this is faster than uploading row by row using glTexSubImage2D.
-			uint8_t *unpaddedPlane = _planeBuffer.data();
-			for (size_t y = 0; y < height; ++y) {
-				memcpy(unpaddedPlane + y * width, plane + y * stride, width);
-			}
-			uploadPlane = unpaddedPlane;
-		}
-	}
+
+	//glPixelStorei(GL_UNPACK_ROW_LENGTH, stride);
+	//if ((size_t)stride != width) {
+	//	if (_hasUnpackRowLength) {
+	//		// GLES3 allows us to specify stride.
+	//		glPixelStorei(GL_UNPACK_ROW_LENGTH, stride);
+	//		glTexImage2D(GL_TEXTURE_2D,
+	//			0,
+	//			RTC_PIXEL_FORMAT,
+	//			static_cast<GLsizei>(width),
+	//			static_cast<GLsizei>(height),
+	//			0,
+	//			RTC_PIXEL_FORMAT,
+	//			GL_UNSIGNED_BYTE,
+	//			uploadPlane);
+	//		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	//		return;
+	//	}
+	//	else {
+	//		// Make an unpadded copy and upload that instead. Quick profiling showed
+	//		// that this is faster than uploading row by row using glTexSubImage2D.
+	//		uint8_t *unpaddedPlane = _planeBuffer.data();
+	//		for (size_t y = 0; y < height; ++y) {
+	//			memcpy(unpaddedPlane + y * width, plane + y * stride, width);
+	//		}
+	//		uploadPlane = unpaddedPlane;
+	//	}
+	//}
 	glTexImage2D(GL_TEXTURE_2D,
 		0,
 		RTC_PIXEL_FORMAT,
@@ -87,6 +89,8 @@ void I420TextureCache::uploadPlane(const uint8_t* plane, GLuint texture, size_t 
 		RTC_PIXEL_FORMAT,
 		GL_UNSIGNED_BYTE,
 		uploadPlane);
+	
+	//glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 }
 
 void I420TextureCache::uploadFrameToTextures(const webrtc::VideoFrame& frame) 
@@ -100,17 +104,17 @@ void I420TextureCache::uploadFrameToTextures(const webrtc::VideoFrame& frame)
 
 	rtc::scoped_refptr<webrtc::I420BufferInterface> buffer = vfb->ToI420();
 
-	const int chromaWidth = buffer->ChromaWidth();
-	const int chromaHeight = buffer->ChromaHeight();
-	if (buffer->StrideY() != frame.width() ||
-		buffer->StrideU() != chromaWidth ||
-		buffer->StrideV() != chromaWidth) {
-		_planeBuffer.resize(buffer->width() * buffer->height());
-	}
+	//const int chromaWidth = buffer->ChromaWidth();
+	//const int chromaHeight = buffer->ChromaHeight();
+	//if (buffer->StrideY() != frame.width() ||
+	//	buffer->StrideU() != chromaWidth ||
+	//	buffer->StrideV() != chromaWidth) {
+	//	_planeBuffer.resize(buffer->width() * buffer->height());
+	//}
 
 	uploadPlane(buffer->DataY(), yTexture(), buffer->width(), buffer->height(),  buffer->StrideY());
 
-	uploadPlane(buffer->DataU(), uTexture(), chromaWidth, chromaHeight, buffer->StrideU());
+	uploadPlane(buffer->DataU(), uTexture(), buffer->ChromaWidth(), buffer->ChromaHeight(), buffer->StrideU());
 
-	uploadPlane(buffer->DataV(), vTexture(), chromaWidth, chromaHeight, buffer->StrideV());
+	uploadPlane(buffer->DataV(), vTexture(), buffer->ChromaWidth(), buffer->ChromaHeight(), buffer->StrideV());
 }

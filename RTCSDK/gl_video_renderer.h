@@ -1,28 +1,30 @@
 #pragma once
 
 #include <memory>
-#include <QOpenGLWidget>
-#include <qopenglfunctions_4_5_core.h>
-#include <QOpenGLBuffer>
+#include "gl_defines.h"
 #include "api/video/video_sink_interface.h"
 #include "api/video/video_frame.h"
+#include <QTimer>
+#include <mutex>
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions>
 
-//class QOpenGLShaderProgram;
-//class QOpenGLShader;
-//class QOpenGLTexture;
 class GLVideoShader;
 class I420TextureCache;
 
 class GLVideoRenderer 
 	: public QOpenGLWidget
-	, public QOpenGLFunctions_4_5_Core
+	, public QOpenGLFunctions
 	, public rtc::VideoSinkInterface<webrtc::VideoFrame>
+	, public std::enable_shared_from_this<GLVideoRenderer>
 {
 	Q_OBJECT
 
 public:
 	GLVideoRenderer(QWidget *parent);
 	~GLVideoRenderer();
+
+	void init();
 
 protected:
 	void initializeGL() override;
@@ -33,13 +35,16 @@ protected:
 
 	void OnFrame(const webrtc::VideoFrame& frame) override;
 
+	void resizeEvent(QResizeEvent *event) override;
+
+
+private slots:
+	void timeout();
+
 private:
 	std::shared_ptr<GLVideoShader> _videoShader;
 	std::shared_ptr<I420TextureCache> _i420TextureCache;
-	rtc::scoped_refptr<webrtc::VideoFrameBuffer> _buffer;
-	webrtc::VideoRotation _rotation;
-	int64_t _timestamp_us;
-	//QOpenGLShaderProgram* _program;
-	//QOpenGLShader* _shader;
-	//QOpenGLTexture* _texture;
+	QTimer* _timer;
+	std::mutex _mutex;
+	std::shared_ptr<webrtc::VideoFrame> _frame;
 };

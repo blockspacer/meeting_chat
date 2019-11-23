@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GL/glew.h>
 #define RTC_PIXEL_FORMAT GL_RED
 #define SHADER_VERSION "#version 150\n"
 #define VERTEX_SHADER_IN "in"

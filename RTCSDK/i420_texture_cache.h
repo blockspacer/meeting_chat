@@ -1,10 +1,11 @@
 #pragma once
 
+#include "gl_defines.h"
 #include <memory>
-#include <qopenglfunctions_4_5_core.h>
+#include <vector>
 #include "api/video/i420_buffer.h"
 #include "api/video/video_frame.h"
-#include <vector>
+#include <stdint.h>
 
 // Two sets of 3 textures are used here, one for each of the Y, U and V planes. Having two sets
 // alleviates CPU blockage in the event that the GPU is asked to render to a texture that is already
@@ -14,21 +15,22 @@ static const GLsizei kNumTexturesPerSet = 3;
 static const GLsizei kNumTextures = kNumTexturesPerSet * kNumTextureSets;
 
 class I420TextureCache 
-	: public QOpenGLFunctions_4_5_Core
-	, public std::enable_shared_from_this<I420TextureCache>
+	: public std::enable_shared_from_this<I420TextureCache>
 {
 public:
 	I420TextureCache();
 	~I420TextureCache();
 
 public:
+	void init(); 
+
 	void uploadFrameToTextures(const webrtc::VideoFrame& frame);
 
-	GLuint I420TextureCache::yTexture();
+	GLuint yTexture();
 
-	GLuint I420TextureCache::uTexture();
+	GLuint uTexture();
 
-	GLuint I420TextureCache::vTexture();
+	GLuint vTexture();
 
 protected:
 	void setupTextures();
@@ -37,7 +39,7 @@ protected:
 
 private:
 	bool _hasUnpackRowLength;
-	GLint _currentTextureSet;
+	GLint _currentTextureSet = 0;
 	// Handles for OpenGL constructs.
 	GLuint _textures[kNumTextures];
 	// Used to create a non-padded plane for GPU upload when we receive padded frames.

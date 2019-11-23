@@ -8,12 +8,50 @@
 #include "x2struct.hpp"
 #include <QDebug>
 
+#include "api/media_stream_interface.h"
+#include "api/create_peerconnection_factory.h"
+#include "api/video_codecs/builtin_video_decoder_factory.h"
+#include "api/video_codecs/builtin_video_encoder_factory.h"
+#include "api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "modules/audio_device/include/audio_device.h"
+#include "modules/audio_processing/include/audio_processing.h"
+#include "modules/video_capture/video_capture_factory.h"
+#include "pc/video_track_source.h"
+#include "local_video_capture.h"
+#include "gl_video_renderer.h"
+
 UI::UI(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
 	connect(ui.pushButtonStart, &QPushButton::clicked, this, &UI::onStartButtonClicked);
 	connect(ui.pushButtonRegister, &QPushButton::clicked, this, &UI::onRegisterButtonClicked);
+}
+
+void UI::init()
+{
+
+	//_pcf = webrtc::CreatePeerConnectionFactory(
+	//	nullptr /* network_thread */,
+	//	nullptr /* worker_thread */,
+	//	nullptr /* signaling_thread */,
+	//	nullptr /* default_adm */,
+	//	webrtc::CreateBuiltinAudioEncoderFactory(),
+	//	webrtc::CreateBuiltinAudioDecoderFactory(),
+	//	webrtc::CreateBuiltinVideoEncoderFactory(),
+	//	webrtc::CreateBuiltinVideoDecoderFactory(),
+	//	nullptr /* audio_mixer */,
+	//	nullptr /* audio_processing */);
+
+
+	_renderer = std::make_shared<GLVideoRenderer>(this);
+	_renderer->init();
+	//_renderer->setFixedSize(640, 480);
+	this->setCentralWidget(_renderer.get());
+	_renderer->show();
+
+	
 }
 
 void UI::onStatus(vi::WRServiceStauts status)
@@ -25,11 +63,19 @@ void UI::onStatus(vi::WRServiceStauts status)
 
 void UI::onStartButtonClicked()
 {
-	if (!_vr) {
-		auto wrs = FetchService(vi::IWebRTCService);
-		_vr = std::make_shared<vi::VideoRoom>(wrs);
-	}
-	_vr->attach();
+	//if (!_vr) {
+	//	auto wrs = FetchService(vi::IWebRTCService);
+	//	_vr = std::make_shared<vi::VideoRoom>(wrs);
+	//}
+	//_vr->attach();
+
+
+	//std::shared_ptr<GLVideoRenderer> _renderer;
+	//rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> _pcf;
+
+
+	
+
 }
 
 void UI::onRegisterButtonClicked()

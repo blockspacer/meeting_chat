@@ -1,12 +1,10 @@
 #include "gl_video_shader.h"
-#include "gl_defines.h"
 #include <algorithm>
 #include <array>
 #include <memory>
-#include <QtGui/qopenglext.h>
 #include <QDebug>
-#include "rtc_base/checks.h"
-#include "rtc_base/logging.h"
+//#include "rtc_base/checks.h"
+//#include "rtc_base/logging.h"
 
 // Vertex shader doesn't do anything except pass coordinates through.
 const char kRTCVertexShaderSource[] =
@@ -69,6 +67,7 @@ FRAGMENT_SHADER_OUT
 
 GLVideoShader::GLVideoShader()
 {
+
 }
 
 
@@ -133,9 +132,9 @@ GLuint GLVideoShader::createProgram(GLuint vertexShader, GLuint fragmentShader) 
 // a plain vertex shader. Returns the program handle or 0 on error.
 GLuint GLVideoShader::createProgramFromFragmentSource(const char fragmentShaderSource[]) {
 	GLuint vertexShader = createShader(GL_VERTEX_SHADER, kRTCVertexShaderSource);
-	RTC_CHECK(vertexShader) << "failed to create vertex shader";
+	//RTC_CHECK(vertexShader) << "failed to create vertex shader";
 	GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-	RTC_CHECK(fragmentShader) << "failed to create fragment shader"; 
+	//RTC_CHECK(fragmentShader) << "failed to create fragment shader"; 
 
 	GLuint program = createProgram(vertexShader, fragmentShader);
 	// Shaders are created only to generate program.
@@ -286,7 +285,7 @@ bool GLVideoShader::prepareVertexBuffer(webrtc::VideoRotation rotation) {
 
 	glBindVertexArray(_vertexArray);
 
-	glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer); 
 	if (!_currentRotation || rotation != *_currentRotation) {
 		_currentRotation = absl::optional<webrtc::VideoRotation>(rotation);
 		setVertexData(*_currentRotation);

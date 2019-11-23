@@ -14,6 +14,20 @@
 #include "i_webrtc_service.h"
 #include <QSurfaceFormat>
 
+#include "api/media_stream_interface.h"
+#include "api/create_peerconnection_factory.h"
+#include "api/video_codecs/builtin_video_decoder_factory.h"
+#include "api/video_codecs/builtin_video_encoder_factory.h"
+#include "api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "modules/audio_device/include/audio_device.h"
+#include "modules/audio_processing/include/audio_processing.h"
+#include "modules/video_capture/video_capture_factory.h"
+#include "pc/video_track_source.h"
+#include "local_video_capture.h"
+#include "gl_video_renderer.h"
+#include <QDebug>
+
 using namespace core;
 
 //#include "x2struct/x2struct.hpp"
@@ -59,12 +73,12 @@ static void registerMetaTypes()
 }
 
 static void initOpenGL() {
-	QSurfaceFormat format;
-	format.setDepthBufferSize(24);
-	format.setStencilBufferSize(8);
-	format.setVersion(4, 5);
-	format.setProfile(QSurfaceFormat::CoreProfile);
-	QSurfaceFormat::setDefaultFormat(format);
+	//QSurfaceFormat format;
+	//format.setDepthBufferSize(24);
+	//format.setStencilBufferSize(8);
+	//format.setVersion(4, 4);
+	//format.setProfile(QSurfaceFormat::CoreProfile);
+	//QSurfaceFormat::setDefaultFormat(format);
 }
 
 int main(int argc, char *argv[])
@@ -78,17 +92,48 @@ int main(int argc, char *argv[])
 
 	rtc::InitializeSSL();
 
+	//QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
 	QApplication a(argc, argv);
-
 	initOpenGL();
+
+	const GLubyte* v = glGetString(GL_VERSION);
 
 	XApp->initApp();
 
-	auto wrs = FetchService(vi::IWebRTCService);
+	//auto wrs = FetchService(vi::IWebRTCService);
 
 	std::shared_ptr<UI> w = std::make_shared<UI>();
-	wrs->addListener(w);
+	//wrs->addListener(w);
 	w->show();
+
+	w->init();
+
+	//std::shared_ptr<GLVideoRenderer> _renderer;
+	rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> _pcf;
+
+	_pcf = webrtc::CreatePeerConnectionFactory(
+		nullptr /* network_thread */,
+		nullptr /* worker_thread */,
+		nullptr /* signaling_thread */,
+		nullptr /* default_adm */,
+		webrtc::CreateBuiltinAudioEncoderFactory(),
+		webrtc::CreateBuiltinAudioDecoderFactory(),
+		webrtc::CreateBuiltinVideoEncoderFactory(),
+		webrtc::CreateBuiltinVideoDecoderFactory(),
+		nullptr /* audio_mixer */,
+		nullptr /* audio_processing */);
+
+	//_renderer = std::make_shared<GLVideoRenderer>(nullptr);
+
+	//w->_renderer->init();
+	//w->setCentralWidget(w->_renderer.get());
+	rtc::scoped_refptr<vi::CapturerTrackSource> videoDevice = vi::CapturerTrackSource::Create();
+	if (videoDevice) {
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack(
+			_pcf->CreateVideoTrack("video_label", videoDevice));
+		rtc::VideoSinkWants wants;
+		videoTrack->AddOrUpdateSink(w->_renderer.get(), wants);
+	}
 
 	int ret = a.exec();
 

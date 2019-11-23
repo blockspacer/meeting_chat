@@ -1,14 +1,12 @@
 #pragma once
 
+#include "gl_defines.h"
 #include <memory>
-#include <qopengl.h>
-#include <qopenglfunctions_4_5_core.h>
 #include "absl/types/optional.h"
 #include "api/video/video_rotation.h"
 
 class GLVideoShader 
-	: public QOpenGLFunctions_4_5_Core
-	, public std::enable_shared_from_this<GLVideoShader>
+	: public std::enable_shared_from_this<GLVideoShader>
 {
 public:
 	GLVideoShader();
@@ -41,12 +39,12 @@ protected:
 	void setVertexData(webrtc::VideoRotation rotation);
 
 private:
-	GLuint _vertexBuffer;
-	GLuint _vertexArray;
+	GLuint _vertexBuffer = 0;
+	GLuint _vertexArray = 0;
 	// Store current rotation and only upload new vertex data when rotation changes.
 	absl::optional<webrtc::VideoRotation> _currentRotation;
 
-	GLuint _i420Program;
-	GLuint _nv12Program;
+	GLuint _i420Program = 0;
+	GLuint _nv12Program = 0;
 };
 

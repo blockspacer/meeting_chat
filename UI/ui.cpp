@@ -31,27 +31,10 @@ UI::UI(QWidget *parent)
 
 void UI::init()
 {
-
-	//_pcf = webrtc::CreatePeerConnectionFactory(
-	//	nullptr /* network_thread */,
-	//	nullptr /* worker_thread */,
-	//	nullptr /* signaling_thread */,
-	//	nullptr /* default_adm */,
-	//	webrtc::CreateBuiltinAudioEncoderFactory(),
-	//	webrtc::CreateBuiltinAudioDecoderFactory(),
-	//	webrtc::CreateBuiltinVideoEncoderFactory(),
-	//	webrtc::CreateBuiltinVideoDecoderFactory(),
-	//	nullptr /* audio_mixer */,
-	//	nullptr /* audio_processing */);
-
-
-	_renderer = std::make_shared<GLVideoRenderer>(this);
-	_renderer->init();
-	//_renderer->setFixedSize(640, 480);
-	this->setCentralWidget(_renderer.get());
-	_renderer->show();
-
-	
+	//_renderer = std::make_shared<GLVideoRenderer>(this);
+	//_renderer->init();
+	//this->setCentralWidget(_renderer.get());
+	//_renderer->show();
 }
 
 void UI::onStatus(vi::WRServiceStauts status)
@@ -63,26 +46,18 @@ void UI::onStatus(vi::WRServiceStauts status)
 
 void UI::onStartButtonClicked()
 {
-	//if (!_vr) {
-	//	auto wrs = FetchService(vi::IWebRTCService);
-	//	_vr = std::make_shared<vi::VideoRoom>(wrs);
-	//}
-	//_vr->attach();
-
-
-	//std::shared_ptr<GLVideoRenderer> _renderer;
-	//rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> _pcf;
-
-
-	
-
+	if (!_vr) {
+		auto wrs = FetchService(vi::IWebRTCService);
+		_vr = std::make_shared<vi::VideoRoom>(wrs);
+	}
+	_vr->attach();
 }
 
 void UI::onRegisterButtonClicked()
 {
 	vi::RegisterRequest request;
 	request.request = "join";
-	request.room = 1234;
+	request.room = 8190;
 	request.ptype = "publisher";
 	request.display = ui.lineEditUserName->text().toStdString();
 

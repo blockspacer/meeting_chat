@@ -49,7 +49,7 @@ namespace vi {
 			_sfuClient->removeListener(shared_from_this());
 			_sfuClient = nullptr;
 		}
-		_sfuClient = std::make_shared<vi::JanusClient>("ws://182.61.33.148:8188/janus");
+		_sfuClient = std::make_shared<vi::JanusClient>("ws://106.13.6.35:8188/janus");
 		_sfuClient->init();
 		_sfuClient->addListener(shared_from_this());
 

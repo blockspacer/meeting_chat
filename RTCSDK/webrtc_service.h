@@ -132,7 +132,7 @@ namespace vi {
 		std::string _server;	
 		std::string _token;
 		std::string _opaqueId;
-		std::string _apiSecret;
+		std::string _apiSecret = "jacky";
 		bool _unifiedPlan = true;
 		std::vector<std::string> _iceServers;
 		bool _ipv6Support;

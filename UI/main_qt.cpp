@@ -100,40 +100,35 @@ int main(int argc, char *argv[])
 
 	XApp->initApp();
 
-	//auto wrs = FetchService(vi::IWebRTCService);
+	auto wrs = FetchService(vi::IWebRTCService);
 
 	std::shared_ptr<UI> w = std::make_shared<UI>();
-	//wrs->addListener(w);
+	wrs->addListener(w);
 	w->show();
 
 	w->init();
 
-	//std::shared_ptr<GLVideoRenderer> _renderer;
-	rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> _pcf;
+	//rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> _pcf;
 
-	_pcf = webrtc::CreatePeerConnectionFactory(
-		nullptr /* network_thread */,
-		nullptr /* worker_thread */,
-		nullptr /* signaling_thread */,
-		nullptr /* default_adm */,
-		webrtc::CreateBuiltinAudioEncoderFactory(),
-		webrtc::CreateBuiltinAudioDecoderFactory(),
-		webrtc::CreateBuiltinVideoEncoderFactory(),
-		webrtc::CreateBuiltinVideoDecoderFactory(),
-		nullptr /* audio_mixer */,
-		nullptr /* audio_processing */);
+	//_pcf = webrtc::CreatePeerConnectionFactory(
+	//	nullptr /* network_thread */,
+	//	nullptr /* worker_thread */,
+	//	nullptr /* signaling_thread */,
+	//	nullptr /* default_adm */,
+	//	webrtc::CreateBuiltinAudioEncoderFactory(),
+	//	webrtc::CreateBuiltinAudioDecoderFactory(),
+	//	webrtc::CreateBuiltinVideoEncoderFactory(),
+	//	webrtc::CreateBuiltinVideoDecoderFactory(),
+	//	nullptr /* audio_mixer */,
+	//	nullptr /* audio_processing */);
 
-	//_renderer = std::make_shared<GLVideoRenderer>(nullptr);
-
-	//w->_renderer->init();
-	//w->setCentralWidget(w->_renderer.get());
-	rtc::scoped_refptr<vi::CapturerTrackSource> videoDevice = vi::CapturerTrackSource::Create();
-	if (videoDevice) {
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack(
-			_pcf->CreateVideoTrack("video_label", videoDevice));
-		rtc::VideoSinkWants wants;
-		videoTrack->AddOrUpdateSink(w->_renderer.get(), wants);
-	}
+	//rtc::scoped_refptr<vi::CapturerTrackSource> videoDevice = vi::CapturerTrackSource::Create();
+	//if (videoDevice) {
+	//	rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack(
+	//		_pcf->CreateVideoTrack("video_label", videoDevice));
+	//	rtc::VideoSinkWants wants;
+	//	videoTrack->AddOrUpdateSink(w->_renderer.get(), wants);
+	//}
 
 	int ret = a.exec();
 

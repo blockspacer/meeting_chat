@@ -6,7 +6,6 @@ I420TextureCache::I420TextureCache()
 
 }
 
-
 I420TextureCache::~I420TextureCache()
 {
 	glDeleteTextures(kNumTextures, _textures);

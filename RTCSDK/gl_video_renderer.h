@@ -37,14 +37,9 @@ protected:
 
 	void resizeEvent(QResizeEvent *event) override;
 
-
-private slots:
-	void timeout();
-
 private:
 	std::shared_ptr<GLVideoShader> _videoShader;
 	std::shared_ptr<I420TextureCache> _i420TextureCache;
-	QTimer* _timer;
 	std::mutex _mutex;
 	std::shared_ptr<webrtc::VideoFrame> _frame;
 };

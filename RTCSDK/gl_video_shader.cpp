@@ -3,8 +3,6 @@
 #include <array>
 #include <memory>
 #include <QDebug>
-//#include "rtc_base/checks.h"
-//#include "rtc_base/logging.h"
 
 // Vertex shader doesn't do anything except pass coordinates through.
 const char kRTCVertexShaderSource[] =
@@ -70,7 +68,6 @@ GLVideoShader::GLVideoShader()
 
 }
 
-
 GLVideoShader::~GLVideoShader()
 {
 	glDeleteProgram(_i420Program);
@@ -133,9 +130,14 @@ GLuint GLVideoShader::createProgram(GLuint vertexShader, GLuint fragmentShader) 
 GLuint GLVideoShader::createProgramFromFragmentSource(const char fragmentShaderSource[]) {
 	GLuint vertexShader = createShader(GL_VERTEX_SHADER, kRTCVertexShaderSource);
 	//RTC_CHECK(vertexShader) << "failed to create vertex shader";
+	if (vertexShader == 0) {
+		qDebug() << "failed to create vertex shader";
+	}
 	GLuint fragmentShader = createShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
 	//RTC_CHECK(fragmentShader) << "failed to create fragment shader"; 
-
+	if (fragmentShader == 0) {
+		qDebug() << "failed to create fragment shader";
+	}
 	GLuint program = createProgram(vertexShader, fragmentShader);
 	// Shaders are created only to generate program.
 	if (vertexShader) {

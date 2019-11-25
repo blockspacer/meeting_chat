@@ -1,6 +1,9 @@
 #include "websocket_endpoint.h"
 #include "Websocket/i_connection_listener.h"
 
+//typedef websocketpp::client<websocketpp::config::asio_tls_client> client;
+//typedef websocketpp::lib::shared_ptr<websocketpp::lib::asio::ssl::context> context_ptr;
+
 namespace vi {
 	WebsocketEndpoint::WebsocketEndpoint()
 		: _nextId(0) {

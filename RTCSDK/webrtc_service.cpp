@@ -317,10 +317,127 @@ namespace vi {
 
 	void WebRTCService::sendData(int64_t handleId, std::shared_ptr<SendDataHandler> handler) 
 	{
+		if (!handler) {
+			qDebug() << "handler == nullptr";
+			return;
+		}
+
+		if (_wrehs.find(handleId) == _wrehs.end()) {
+			qDebug() << "Invalid handle";
+			if (handler->callback) {
+				const auto& cb = handler->callback;
+				(*cb)(false, "Invalid handle");
+			}
+			return;
+		}
+
+		if (handler->label.empty() || handler->text.empty()) {
+			qDebug() << "handler->label.empty() || handler->text.empty()";
+			if (handler->callback) {
+				const auto& cb = handler->callback;
+				(*cb)(false, "empty label or empty text");
+			}
+			return;
+		}
+
+		const auto& wreh = _wrehs[handleId];
+		const auto& context = wreh->pluginContext()->webrtcContext;
+
+		if (context->dataChannels.find(handler->label) != context->dataChannels.end()) {
+			rtc::scoped_refptr<webrtc::DataChannelInterface> dc = context->dataChannels[handler->label];
+			if (dc->state() == webrtc::DataChannelInterface::DataState::kOpen) {
+				webrtc::DataBuffer buffer(handler->text);
+				dc->Send(buffer);
+			}
+			else {
+				qDebug() << "data channel doesn't open";
+			}
+		}
+		else {
+			qDebug() << "Create new data channel and wait for it to open";
+			this->createDataChannel(handleId, handler->label, nullptr);
+		}
+		if (handler->callback) {
+			const auto& cb = handler->callback;
+			(*cb)(false, "success");
+		}
 	}
 
 	void WebRTCService::sendDtmf(int64_t handleId, std::shared_ptr<SendDtmfHandler> handler) 
 	{
+		if (!handler) {
+			qDebug() << "handler == nullptr";
+			return;
+		}
+
+		if (_wrehs.find(handleId) == _wrehs.end()) {
+			qDebug() << "Invalid handle";
+			if (handler->callback) {
+				const auto& cb = handler->callback;
+				(*cb)(false, "Invalid handle");
+			}
+			return;
+		}
+
+		const auto& wreh = _wrehs[handleId];
+		const auto& context = wreh->pluginContext()->webrtcContext;
+
+		if (!context->dtmfSender) {
+			if (context->pc) {
+				auto senders = context->pc->GetSenders();
+				rtc::scoped_refptr<webrtc::RtpSenderInterface> audioSender;
+				for (auto sender : senders) {
+					if (sender && sender->GetDtmfSender()) {
+						audioSender = sender;
+					}
+				}
+				if (audioSender) {
+					qDebug() << "Invalid DTMF configuration (no audio track)";
+					if (handler->callback) {
+						const auto& cb = handler->callback;
+						(*cb)(false, "Invalid DTMF configuration (no audio track)");
+					}
+					return;
+				}
+				rtc::scoped_refptr<webrtc::DtmfSenderInterface> dtmfSender = audioSender->GetDtmfSender();
+				context->dtmfSender = dtmfSender;
+				if (context->dtmfSender) {
+					qDebug() << "Created DTMF Sender";
+
+					context->dtmfObserver = std::make_unique<DTMFObserver>();
+
+					auto tccb = std::make_shared<ToneChangeCallback>([](const std::string& tone, const std::string& tone_buffer) {
+						qDebug() << "Sent DTMF tone: " << tone.c_str();
+					});
+
+					context->dtmfObserver->setMessageCallback(tccb);
+
+					context->dtmfSender->RegisterObserver(context->dtmfObserver.get());
+				}
+			}
+		}
+
+		if (handler->tones.empty()) {
+			if (handler->callback) {
+				const auto& cb = handler->callback;
+				(*cb)(false, "Invalid DTMF parameters");
+			}
+			return;
+		}
+
+		// We choose 500ms as the default duration for a tone
+		int duration = handler->duration > 0 ? handler->duration : 500;
+
+		// We choose 50ms as the default gap between tones
+		int gap = handler->interToneGap > 0 ? handler->interToneGap : 50;
+
+		qDebug() << "Sending DTMF string " << handler->tones.c_str() << " (duration " << duration << "ms, gap " << gap << "ms)";
+		context->dtmfSender->InsertDtmf(handler->tones, duration, gap);
+
+		if (handler->callback) {
+			const auto& cb = handler->callback;
+			(*cb)(false, "success");
+		}
 	}
 
 	void WebRTCService::prepareWebrtc(int64_t handleId, bool isOffer, std::shared_ptr<PrepareWebRTCHandler> handler)
@@ -827,7 +944,8 @@ namespace vi {
 		destroyHandle(handleId, handler);
 	}
 
-	void WebRTCService::onConnected()
+	// ISFUClientListener
+	void WebRTCService::onOpened()
 	{
 		std::shared_ptr<CreateSessionHandler> handler = std::make_shared<CreateSessionHandler>();
 		handler->reconnect = false;
@@ -839,7 +957,12 @@ namespace vi {
 		createSession(handler);
 	}
 
-	void WebRTCService::onDisconnected()
+	void WebRTCService::onClosed()
+	{
+
+	}	
+	
+	void WebRTCService::onFailed(int errorCode, const std::string& reason)
 	{
 
 	}
@@ -997,11 +1120,6 @@ namespace vi {
 		else {
 			qWarning() << "Unknown message/event  '" << model->janus.c_str() << "' on session " << _sessionId;
 		}
-	}
-
-	void WebRTCService::onError(int errorCode, const std::string& reason)
-	{
-
 	}
 
 	void WebRTCService::heartbeat()

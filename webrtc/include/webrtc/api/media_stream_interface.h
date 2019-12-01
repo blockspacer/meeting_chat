@@ -11,8 +11,7 @@
 // This file contains interfaces for MediaStream, MediaTrack and MediaSource.
 // These interfaces are used for implementing MediaStream and MediaTrack as
 // defined in http://dev.w3.org/2011/webrtc/editor/webrtc.html#stream-api. These
-// interfaces must be used only with PeerConnection. PeerConnectionManager
-// interface provides the factory methods to create MediaStream and MediaTracks.
+// interfaces must be used only with PeerConnection.
 
 #ifndef API_MEDIA_STREAM_INTERFACE_H_
 #define API_MEDIA_STREAM_INTERFACE_H_
@@ -62,13 +61,6 @@ class RTC_EXPORT MediaSourceInterface : public rtc::RefCountInterface,
 
   virtual bool remote() const = 0;
 
-  // Sets the minimum latency of the remote source until audio playout. Actual
-  // observered latency may differ depending on the source. |latency| is in the
-  // range of [0.0, 10.0] seconds.
-  // TODO(kuddai) make pure virtual once not only remote tracks support latency.
-  virtual void SetLatency(double latency) {}
-  virtual double GetLatency() const;
-
  protected:
   ~MediaSourceInterface() override = default;
 };
@@ -83,8 +75,8 @@ class RTC_EXPORT MediaStreamTrackInterface : public rtc::RefCountInterface,
     kEnded,
   };
 
-  static const char kAudioKind[];
-  static const char kVideoKind[];
+  static const char* const kAudioKind;
+  static const char* const kVideoKind;
 
   // The kind() method must return kAudioKind only if the object is a
   // subclass of AudioTrackInterface, and kVideoKind only if the
@@ -153,8 +145,9 @@ class VideoTrackSourceInterface : public MediaSourceInterface,
 // PeerConnectionFactory::CreateVideoTrack can be used for creating a VideoTrack
 // that ensures thread safety and that all methods are called on the right
 // thread.
-class VideoTrackInterface : public MediaStreamTrackInterface,
-                            public rtc::VideoSourceInterface<VideoFrame> {
+class RTC_EXPORT VideoTrackInterface
+    : public MediaStreamTrackInterface,
+      public rtc::VideoSourceInterface<VideoFrame> {
  public:
   // Video track content hint, used to override the source is_screencast
   // property.
@@ -243,7 +236,7 @@ class AudioProcessorInterface : public rtc::RefCountInterface {
   ~AudioProcessorInterface() override = default;
 };
 
-class AudioTrackInterface : public MediaStreamTrackInterface {
+class RTC_EXPORT AudioTrackInterface : public MediaStreamTrackInterface {
  public:
   // TODO(deadbeef): Figure out if the following interface should be const or
   // not.

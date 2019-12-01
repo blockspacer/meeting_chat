@@ -244,5 +244,28 @@ namespace vi {
 		std::shared_ptr<StateChangeCallback> _stateChangeCallback;
 		std::shared_ptr<MessageCallback> _messageCallback;
 	};
+
+	using ToneChangeCallback = std::function<void(const std::string& tone, const std::string& tone_buffer)>;
+	class DTMFObserver : public webrtc::DtmfSenderObserverInterface {
+	public:
+		void setMessageCallback(std::shared_ptr<ToneChangeCallback> callback)
+		{
+			_toneChangeCallback = callback;
+		}
+
+	protected:
+		// Triggered when DTMF |tone| is sent.
+		// If |tone| is empty that means the DtmfSender has sent out all the given
+		// tones.
+		// The callback includes the state of the tone buffer at the time when
+		// the tone finished playing.
+		void OnToneChange(const std::string& tone, const std::string& tone_buffer) override 
+		{
+
+		}
+
+	private:
+		std::shared_ptr<ToneChangeCallback> _toneChangeCallback;
+	};
 }						
 

@@ -14,6 +14,7 @@
 
 #include "api/network_state_predictor.h"
 #include "api/transport/network_control.h"
+#include "rtc_base/deprecation.h"
 
 namespace webrtc {
 class RtcEventLog;
@@ -29,7 +30,9 @@ struct GoogCcFactoryConfig {
 class GoogCcNetworkControllerFactory
     : public NetworkControllerFactoryInterface {
  public:
-  explicit GoogCcNetworkControllerFactory(RtcEventLog* event_log);
+  GoogCcNetworkControllerFactory() = default;
+  explicit RTC_DEPRECATED GoogCcNetworkControllerFactory(
+      RtcEventLog* event_log);
   explicit GoogCcNetworkControllerFactory(
       NetworkStatePredictorFactoryInterface* network_state_predictor_factory);
 
@@ -43,9 +46,10 @@ class GoogCcNetworkControllerFactory
   GoogCcFactoryConfig factory_config_;
 };
 
+// Deprecated, use GoogCcFactoryConfig to enable feedback only mode instead.
 // Factory to create packet feedback only GoogCC, this can be used for
 // connections providing packet receive time feedback but no other reports.
-class GoogCcFeedbackNetworkControllerFactory
+class RTC_DEPRECATED GoogCcFeedbackNetworkControllerFactory
     : public GoogCcNetworkControllerFactory {
  public:
   explicit GoogCcFeedbackNetworkControllerFactory(RtcEventLog* event_log);

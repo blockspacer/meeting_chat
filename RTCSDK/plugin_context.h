@@ -27,6 +27,7 @@ namespace vi {
 		std::map<std::string, rtc::scoped_refptr<webrtc::DataChannelInterface>> dataChannels;
 		std::map<std::string, std::shared_ptr<DCObserver>> dataChannelObservers;
 		rtc::scoped_refptr<webrtc::DtmfSenderInterface> dtmfSender;
+		std::unique_ptr<DTMFObserver> dtmfObserver;
 		absl::optional<bool> trickle = true;
 		std::atomic_bool iceDone = false;
 		std::atomic_bool sdpSent = false;

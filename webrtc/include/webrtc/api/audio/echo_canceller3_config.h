@@ -47,6 +47,8 @@ struct RTC_EXPORT EchoCanceller3Config {
       int converged;
     } delay_selection_thresholds = {5, 20};
     bool use_external_delay_estimator = false;
+    bool downmix_before_delay_estimation = true;
+    bool log_warning_on_delay_changes = false;
   } delay;
 
   struct Filter {
@@ -85,12 +87,13 @@ struct RTC_EXPORT EchoCanceller3Config {
     float max_h = 1.5f;
     bool onset_detection = true;
     size_t num_sections = 1;
+    bool clamp_quality_estimate_to_zero = true;
+    bool clamp_quality_estimate_to_one = true;
   } erle;
 
   struct EpStrength {
     float default_gain = 1.f;
     float default_len = 0.83f;
-    bool reverb_based_on_render = true;
     bool echo_can_saturate = true;
     bool bounded_erl = false;
   } ep_strength;
@@ -102,7 +105,7 @@ struct RTC_EXPORT EchoCanceller3Config {
     float audibility_threshold_lf = 10;
     float audibility_threshold_mf = 10;
     float audibility_threshold_hf = 10;
-    bool use_stationary_properties = false;
+    bool use_stationarity_properties = false;
     bool use_stationarity_properties_at_init = false;
   } echo_audibility;
 

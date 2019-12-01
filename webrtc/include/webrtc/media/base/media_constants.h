@@ -91,6 +91,10 @@ extern const int kPreferredSPropStereo;
 extern const int kPreferredStereo;
 extern const int kPreferredUseInbandFec;
 
+extern const char kPacketizationParamRaw[];
+
+// rtcp-fb message in its first experimental stages. Documentation pending.
+extern const char kRtcpFbParamLntf[];
 // rtcp-fb messages according to RFC 4585
 extern const char kRtcpFbParamNack[];
 extern const char kRtcpFbNackParamPli[];

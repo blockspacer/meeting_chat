@@ -13,6 +13,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -177,6 +178,24 @@ class RTC_EXPORT RTCStats {
                                  &local_var_members[0],                        \
                                  &local_var_members[local_var_members_count]); \
     return local_var_members_vec;                                              \
+  }
+
+// A version of WEBRTC_RTCSTATS_IMPL() where "..." is omitted, used to avoid a
+// compile error on windows. This is used if the stats dictionary does not
+// declare any members of its own (but perhaps its parent dictionary does).
+#define WEBRTC_RTCSTATS_IMPL_NO_MEMBERS(this_class, parent_class, type_str) \
+  const char this_class::kType[] = type_str;                                \
+                                                                            \
+  std::unique_ptr<webrtc::RTCStats> this_class::copy() const {              \
+    return std::unique_ptr<webrtc::RTCStats>(new this_class(*this));        \
+  }                                                                         \
+                                                                            \
+  const char* this_class::type() const { return this_class::kType; }        \
+                                                                            \
+  std::vector<const webrtc::RTCStatsMemberInterface*>                       \
+  this_class::MembersOfThisObjectAndAncestors(                              \
+      size_t local_var_additional_capacity) const {                         \
+    return parent_class::MembersOfThisObjectAndAncestors(0);                \
   }
 
 // Non-standard stats members can be exposed to the JavaScript API in Chrome

@@ -26,6 +26,9 @@ namespace vi {
 
 	class SendDtmfHandler {
 	public:
+		std::string tones;
+		int duration;
+		int interToneGap;
 		std::shared_ptr<HandlerCallback> callback;
 	};
 

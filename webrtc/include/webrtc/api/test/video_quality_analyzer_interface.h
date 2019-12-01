@@ -14,7 +14,6 @@
 #include <memory>
 #include <string>
 
-#include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "api/test/stats_observer_interface.h"
 #include "api/video/encoded_image.h"
@@ -79,8 +78,8 @@ class VideoQualityAnalyzerInterface : public StatsObserverInterface {
   // Will be called for each frame dropped by encoder.
   virtual void OnFrameDropped(EncodedImageCallback::DropReason reason) {}
   // Will be called before calling the decoder.
-  virtual void OnFrameReceived(uint16_t frame_id,
-                               const EncodedImage& encoded_image) {}
+  virtual void OnFramePreDecode(uint16_t frame_id,
+                                const EncodedImage& encoded_image) {}
   // Will be called after decoding the frame. |decode_time_ms| is a decode
   // time provided by decoder itself. If decoder doesn’t produce such
   // information can be omitted.
@@ -97,9 +96,9 @@ class VideoQualityAnalyzerInterface : public StatsObserverInterface {
   // All available codes are listed in
   // modules/video_coding/include/video_error_codes.h
   virtual void OnDecoderError(uint16_t frame_id, int32_t error_code) {}
-  // Will be called everytime new stats reports are available for the
+  // Will be called every time new stats reports are available for the
   // Peer Connection identified by |pc_label|.
-  void OnStatsReports(absl::string_view pc_label,
+  void OnStatsReports(const std::string& pc_label,
                       const StatsReports& stats_reports) override {}
 
   // Tells analyzer that analysis complete and it should calculate final

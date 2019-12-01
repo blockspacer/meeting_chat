@@ -241,21 +241,21 @@ namespace vi {
 	void JanusClient::onOpened()
 	{
 		notifyObserver4Change<ISFUClientListener>(_listeners, [](const std::shared_ptr<ISFUClientListener>& listener) {
-			listener->onConnected();
+			listener->onOpened();
 		});
 	}
 
 	void JanusClient::onClosed()
 	{
 		notifyObserver4Change<ISFUClientListener>(_listeners, [](const std::shared_ptr<ISFUClientListener>& listener) {
-			listener->onDisconnected();
+			listener->onClosed();
 		});
 	}
 
 	void JanusClient::onFailed(int errorCode, const std::string& reason)
 	{
 		notifyObserver4Change<ISFUClientListener>(_listeners, [errorCode, reason](const std::shared_ptr<ISFUClientListener>& listener) {
-			listener->onError(errorCode, reason);
+			listener->onFailed(errorCode, reason);
 		});
 	}
 

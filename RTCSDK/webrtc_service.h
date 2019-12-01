@@ -9,9 +9,8 @@
 #include "i_webrtc_service.h"
 #include "i_sfu_client.h"
 #include "i_sfu_client_listener.h"
-#include <QObject>
-#include <QTimer>
 #include "callback_handlers.h"
+#include <QTimer>
 
 namespace vi {
 	class WebRTCService
@@ -81,13 +80,13 @@ namespace vi {
 
 	protected:
 		// ISFUClientListener
-	    void onConnected() override;
+	    void onOpened() override;
 
-		void onDisconnected() override;
+		void onClosed() override;
+
+		void onFailed(int errorCode, const std::string& reason) override;
 
 		void onMessage(std::shared_ptr<JanusResponse> model) override;
-
-		void onError(int errorCode, const std::string& reason) override;
 
 	protected slots:
 		void heartbeat();
@@ -149,6 +148,7 @@ namespace vi {
 		std::unordered_map<int64_t, std::shared_ptr<IWebRTCEventHandler>> _wrehs;
 
 		std::shared_ptr<ISFUClient> _sfuClient;
+
 		std::shared_ptr<QTimer> _heartbeatTimer;
 
 		WRServiceStauts _serviceStatus = WRServiceStauts::DOWN;

@@ -6,13 +6,15 @@
 #include "notification_service.h"
 #include "Thread/task_scheduler_manager.h"
 #include "webrtc_service.h"
+#include "webrtc_service_interface.h"
 #include "webrtc_service_proxy.h"
 
 namespace core {
 
 AppInstance::AppInstance()
+	: _webrtcServiceThread(rtc::Thread::Create())
 {
-
+	_webrtcServiceThread->Start();
 }
 
 AppInstance::~AppInstance()
@@ -31,8 +33,8 @@ void AppInstance::initApp()
 
 void AppInstance::clearnup()
 {
-	auto wrs = FetchService(vi::IWebRTCService);
-	wrs->cleanup();
+	//auto wrs = FetchService(vi::WebRTCServiceInterface);
+	_webrtcService->cleanup();
 }
 
 std::shared_ptr<IUnifiedFactory> AppInstance::getUnifiedFactory()
@@ -52,6 +54,11 @@ std::shared_ptr<NetworkRequestManager> AppInstance::getNetworkRequestManager()
     return _nrMgr;
 }
 
+std::shared_ptr<vi::WebRTCServiceInterface> AppInstance::getWebrtcService()
+{
+	return _webrtcService;
+}
+
 void AppInstance::installBizServices()
 {
     auto uf = getUnifiedFactory();
@@ -59,12 +66,14 @@ void AppInstance::installBizServices()
     auto ns = std::make_shared<NotificationService>(uf);
     ns->init();
 
-	auto ws = std::make_shared<vi::WebRTCService>(uf);
-	ws->init();
+	//auto ws = std::make_shared<vi::WebRTCService>(uf);
+	//ws->init();
 
-	//std::unique_ptr<vi::WebRTCService> uws;
-	//uws.reset(new vi::WebRTCService(uf));
-	//webrtc::WebRTCServiceProxy::Create(nullptr, nullptr, std::move(uws));
+	//std::unique_ptr<webrtc::TaskQueueFactory> tqf = webrtc::CreateDefaultTaskQueueFactory();
+	//std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> wstq = tqf->CreateTaskQueue("webrtc_service", webrtc::TaskQueueFactory::Priority::NORMAL);
+
+	_webrtcService = vi::WebRTCServiceProxy::Create(_webrtcServiceThread.get(), std::make_shared<vi::WebRTCService>());
+	_webrtcService->init();
 }
 
 }

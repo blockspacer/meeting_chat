@@ -1,6 +1,6 @@
 #include "ui.h"
 #include "Service/app_instance.h"
-#include "i_webrtc_service.h"
+#include "webrtc_service_interface.h"
 #include "video_room.h"
 #include "message_models.h"
 #include "string_utils.h"
@@ -37,9 +37,9 @@ void UI::init()
 	//_renderer->show();
 }
 
-void UI::onStatus(vi::WRServiceStauts status)
+void UI::onStatus(vi::ServiceStauts status)
 {
-	if (vi::WRServiceStauts::UP == status) {
+	if (vi::ServiceStauts::UP == status) {
 
 	}
 }
@@ -47,7 +47,8 @@ void UI::onStatus(vi::WRServiceStauts status)
 void UI::onStartButtonClicked()
 {
 	if (!_vr) {
-		auto wrs = FetchService(vi::IWebRTCService);
+		//auto wrs = FetchService(vi::WebRTCServiceInterface);
+		auto wrs = rtcApp->getWebrtcService();
 		_vr = std::make_shared<vi::VideoRoom>(wrs);
 	}
 	_vr->attach();

@@ -25,7 +25,7 @@ public:
 
 private:
 	// IWebRTCServiceListener
-	void onStatus(vi::WRServiceStauts status) override;
+	void onStatus(vi::ServiceStauts status) override;
 
 private slots:
 	void onStartButtonClicked();

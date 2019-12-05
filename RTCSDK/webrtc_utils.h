@@ -246,7 +246,7 @@ namespace vi {
 	};
 
 	using ToneChangeCallback = std::function<void(const std::string& tone, const std::string& tone_buffer)>;
-	class DTMFObserver : public webrtc::DtmfSenderObserverInterface {
+	class DtmfObserver : public webrtc::DtmfSenderObserverInterface {
 	public:
 		void setMessageCallback(std::shared_ptr<ToneChangeCallback> callback)
 		{

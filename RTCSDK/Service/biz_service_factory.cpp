@@ -37,6 +37,7 @@ void BizServiceFactory::cleanup()
 
 void BizServiceFactory::init()
 {
+
 }
 
 }

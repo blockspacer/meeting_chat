@@ -7,7 +7,7 @@ namespace vi {
 		: public PluginClient
 	{
 	public:
-		VideoRoom(std::shared_ptr<IWebRTCService> wrs);
+		VideoRoom(std::shared_ptr<WebRTCServiceInterface> wrs);
 
 		~VideoRoom();
 

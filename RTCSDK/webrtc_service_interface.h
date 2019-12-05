@@ -10,21 +10,20 @@
 namespace vi {
 	class IWebRTCEventHandler;
 	using namespace core;
-	class IWebRTCService : public AbstractBizService
+	class WebRTCServiceInterface
 	{
 	public:
-		IWebRTCService(const std::weak_ptr<IUnifiedFactory> unifiedFactory)
-			: AbstractBizService(unifiedFactory) {
+		virtual ~WebRTCServiceInterface() {}
 
-		} 
+		virtual void init() = 0;
 
-		virtual ~IWebRTCService() {}
+		virtual void cleanup() = 0;
 
 		virtual void addListener(std::shared_ptr<IWebRTCServiceListener> listener) = 0;
 
 		virtual void removeListener(std::shared_ptr<IWebRTCServiceListener> listener) = 0;
 
-		virtual WRServiceStauts status() = 0;
+		virtual ServiceStauts status() = 0;
 
 		virtual void attach(const std::string& plugin, const std::string& opaqueId, std::shared_ptr<IWebRTCEventHandler> wreh) = 0;
 

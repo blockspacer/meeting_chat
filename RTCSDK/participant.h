@@ -12,7 +12,7 @@ namespace vi {
 			int64_t id,
 			int64_t privateId,
 			const std::string& displayName, 
-			std::shared_ptr<IWebRTCService> wrs);
+			std::shared_ptr<WebRTCServiceInterface> wrs);
 
 		~Participant();
 

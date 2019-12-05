@@ -11,7 +11,7 @@
 #include "Thread/i_task_scheduler.h"
 #include "Thread/task_scheduler_manager.h"
 #include "Service/app_instance.h"
-#include "i_webrtc_service.h"
+#include "webrtc_service_interface.h"
 #include <QSurfaceFormat>
 
 #include "api/media_stream_interface.h"
@@ -97,10 +97,10 @@ int main(int argc, char *argv[])
 
 	initOpenGL();
 
-	XApp->initApp();
+	rtcApp->initApp();
 
-	auto wrs = FetchService(vi::IWebRTCService);
-
+	//auto wrs = FetchService(vi::WebRTCServiceInterface);
+	auto wrs = rtcApp->getWebrtcService();
 	std::shared_ptr<UI> w = std::make_shared<UI>();
 	wrs->addListener(w);
 	w->show();
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
 	int ret = a.exec();
 
-	XApp->clearnup();
+	rtcApp->clearnup();
 
 	rtc::CleanupSSL();
 

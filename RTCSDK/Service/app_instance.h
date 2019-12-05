@@ -6,6 +6,7 @@
 #include <memory>
 #include <sstream>
 #include "Network/network_request_manager.h"
+#include "rtc_base/thread.h"
 
 namespace core {
 
@@ -20,6 +21,8 @@ public:
 
     std::shared_ptr<IUnifiedFactory> getUnifiedFactory() override;
 
+	std::shared_ptr<vi::WebRTCServiceInterface> getWebrtcService() override;
+
     std::shared_ptr<NetworkRequestManager> getNetworkRequestManager() override;
 
 protected:
@@ -33,12 +36,14 @@ private:
 private:
     friend class core::Singleton<AppInstance>;
     std::shared_ptr<IUnifiedFactory> _unifiedFactory;
+	std::unique_ptr<rtc::Thread> _webrtcServiceThread;
+	std::shared_ptr<vi::WebRTCServiceInterface> _webrtcService;
     std::shared_ptr<NetworkRequestManager> _nrMgr;
 };
 
 }
 
-#define XApp core::AppInstance::instance()
-#define UFactory XApp->getUnifiedFactory()
+#define rtcApp core::AppInstance::instance()
+#define UFactory rtcApp->getUnifiedFactory()
 #define FetchService(S) UFactory->getBizServiceFactory()->getService<S>()
 #define Logger core::AppInstance::instance()->getLogger()

@@ -114,6 +114,7 @@
     <ClCompile Include="string_utils.cpp" />
     <ClCompile Include="text_room.cpp" />
     <ClCompile Include="video_room.cpp" />
+    <ClCompile Include="weak_proxy.cpp" />
     <ClCompile Include="webrtc_service.cpp" />
     <ClCompile Include="webrtc_utils.cpp" />
   </ItemGroup>
@@ -131,7 +132,8 @@
     <ClInclude Include="i_text_room_listener.h" />
     <ClInclude Include="i_video_room_listener.h" />
     <ClInclude Include="i_webrtc_event_handler.h" />
-    <ClInclude Include="i_webrtc_service.h" />
+    <ClInclude Include="weak_proxy.h" />
+    <ClInclude Include="webrtc_service_interface.h" />
     <ClInclude Include="i_webrtc_service_listener.h" />
     <ClInclude Include="janus_client.h" />
     <ClInclude Include="i_message_transport.h" />

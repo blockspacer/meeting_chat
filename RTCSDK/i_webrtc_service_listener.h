@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 namespace vi {
-	enum class WRServiceStauts : uint8_t {
+	enum class ServiceStauts : uint8_t {
 		UP = 0,
 		DOWN,
 		RESTARTING
@@ -13,6 +13,6 @@ namespace vi {
 	public:
 		virtual ~IWebRTCServiceListener() {}
 
-		virtual void onStatus(WRServiceStauts status) = 0;
+		virtual void onStatus(ServiceStauts status) = 0;
 	};
 }

@@ -5,7 +5,7 @@
 #include "x2struct.hpp"
 
 namespace vi {
-	VideoRoom::VideoRoom(std::shared_ptr<IWebRTCService> wrs)
+	VideoRoom::VideoRoom(std::shared_ptr<WebRTCServiceInterface> wrs)
 		: PluginClient(wrs)
 	{
 		_pluginContext->plugin = "janus.plugin.videoroom";

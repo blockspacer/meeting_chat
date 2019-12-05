@@ -6,22 +6,23 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "api/peer_connection_interface.h"
-#include "i_webrtc_service.h"
 #include "i_sfu_client.h"
 #include "i_sfu_client_listener.h"
 #include "callback_handlers.h"
 #include <QTimer>
+#include "webrtc_service_interface.h"
 
 namespace vi {
 	class WebRTCService
 		: public QObject
-		, public IWebRTCService
+		, public WebRTCServiceInterface
 		, public ISFUClientListener
+		, public core::Observable
 		, public std::enable_shared_from_this<WebRTCService>
 	{
 		Q_OBJECT
 	public:
-		WebRTCService(const std::weak_ptr<IUnifiedFactory> unifiedFactory);
+		WebRTCService(/*const std::weak_ptr<IUnifiedFactory> unifiedFactory*/);
 
 		~WebRTCService() override;
 
@@ -36,7 +37,7 @@ namespace vi {
 
 		void removeListener(std::shared_ptr<IWebRTCServiceListener> listener) override;
 
-		WRServiceStauts status() override;
+		ServiceStauts status() override;
 
 		void attach(const std::string& plugin, const std::string& opaqueId, std::shared_ptr<IWebRTCEventHandler> wreh) override;
 
@@ -151,7 +152,7 @@ namespace vi {
 
 		std::shared_ptr<QTimer> _heartbeatTimer;
 
-		WRServiceStauts _serviceStatus = WRServiceStauts::DOWN;
+		ServiceStauts _serviceStatus = ServiceStauts::DOWN;
 
 		std::vector<std::weak_ptr<IWebRTCServiceListener>> _listeners;
 

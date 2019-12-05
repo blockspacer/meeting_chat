@@ -1,10 +1,9 @@
 #include "plugin_client.h"
 
 namespace vi {
-	PluginClient::PluginClient(std::shared_ptr<IWebRTCService> wrs)
+	PluginClient::PluginClient(std::shared_ptr<WebRTCServiceInterface> wrs)
 	{
-		_pluginContext = std::make_shared<PluginContext>();
-		_pluginContext->webrtcService = wrs;
+		_pluginContext = std::make_shared<PluginContext>(wrs);
 	}
 
 	PluginClient::~PluginClient()
@@ -24,7 +23,7 @@ namespace vi {
 	void PluginClient::attach()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->attach(_pluginContext->plugin, _pluginContext->opaqueId, shared_from_this());
 			}
 		}
@@ -33,7 +32,7 @@ namespace vi {
 	int32_t PluginClient::getRemoteVolume()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->getRemoteVolume(_pluginContext->handleId);
 			}
 		}
@@ -43,7 +42,7 @@ namespace vi {
 	int32_t PluginClient::getLocalVolume()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->getLocalVolume(_pluginContext->handleId);
 			}
 		}
@@ -53,7 +52,7 @@ namespace vi {
 	bool PluginClient::isAudioMuted()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->isAudioMuted(_pluginContext->handleId);
 			}
 		}
@@ -63,7 +62,7 @@ namespace vi {
 	bool PluginClient::isVideoMuted()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->isVideoMuted(_pluginContext->handleId);
 			}
 		}
@@ -73,7 +72,7 @@ namespace vi {
 	bool PluginClient::muteAudio()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->muteAudio(_pluginContext->handleId);
 			}
 		}
@@ -83,7 +82,7 @@ namespace vi {
 	bool PluginClient::muteVideo()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->muteVideo(_pluginContext->handleId);
 			}
 		}
@@ -93,7 +92,7 @@ namespace vi {
 	bool PluginClient::unmuteAudio()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->unmuteAudio(_pluginContext->handleId);
 			}
 		}
@@ -103,7 +102,7 @@ namespace vi {
 	bool PluginClient::unmuteVideo()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->unmuteVideo(_pluginContext->handleId);
 			}
 		}
@@ -113,7 +112,7 @@ namespace vi {
 	std::string PluginClient::getBitrate()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				return wrs->getBitrate(_pluginContext->handleId);
 			}
 		}
@@ -123,7 +122,7 @@ namespace vi {
 	void PluginClient::sendMessage(std::shared_ptr<SendMessageHandler> handler)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->sendMessage(_pluginContext->handleId, handler);
 			}
 		}
@@ -132,7 +131,7 @@ namespace vi {
 	void PluginClient::sendData(std::shared_ptr<SendDataHandler> handler)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->sendData(_pluginContext->handleId, handler);
 			}
 		}
@@ -141,7 +140,7 @@ namespace vi {
 	void PluginClient::sendDtmf(std::shared_ptr<SendDtmfHandler> handler)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->sendDtmf(_pluginContext->handleId, handler);
 			}
 		}
@@ -150,7 +149,7 @@ namespace vi {
 	void PluginClient::createOffer(std::shared_ptr<PrepareWebRTCHandler> handler)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->createOffer(_pluginContext->handleId, handler);
 			}
 		}
@@ -159,7 +158,7 @@ namespace vi {
 	void PluginClient::createAnswer(std::shared_ptr<PrepareWebRTCHandler> handler)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->createAnswer(_pluginContext->handleId, handler);
 			}
 		}
@@ -168,7 +167,7 @@ namespace vi {
 	void PluginClient::handleRemoteJsep(std::shared_ptr<PrepareWebRTCPeerHandler> handler)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->handleRemoteJsep(_pluginContext->handleId, handler);
 			}
 		}
@@ -177,7 +176,7 @@ namespace vi {
 	void PluginClient::hangup(bool sendRequest)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->hangup(_pluginContext->handleId, sendRequest);
 			}
 		}
@@ -186,7 +185,7 @@ namespace vi {
 	void PluginClient::detach(std::shared_ptr<DetachHandler> handler)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
-			if (wrs->status() == WRServiceStauts::UP) {
+			if (wrs->status() == ServiceStauts::UP) {
 				wrs->detach(_pluginContext->handleId, handler);
 			}
 		}

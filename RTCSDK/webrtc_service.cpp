@@ -26,8 +26,8 @@ namespace vi {
 
 	static std::unordered_map<int64_t, std::weak_ptr<WebRTCService>> g_sessions;
 
-	WebRTCService::WebRTCService(const std::weak_ptr<IUnifiedFactory> unifiedFactory)
-		: IWebRTCService(unifiedFactory)
+	WebRTCService::WebRTCService(/*const std::weak_ptr<IUnifiedFactory> unifiedFactory*/)
+		//: WebRTCServiceInterface(unifiedFactory)
 	{
 		_iceServers.emplace_back("stun:stun.l.google.com:19302");
 	}
@@ -39,11 +39,11 @@ namespace vi {
 
 	void WebRTCService::init()
 	{
-		auto uf = _unifiedFactory.lock();
-		assert(uf != nullptr);
-		auto bsf = uf->getBizServiceFactory();
-		assert(bsf != nullptr);
-		bsf->registerService(typeid(IWebRTCService).name(), shared_from_this());
+		//auto uf = _unifiedFactory.lock();
+		//assert(uf != nullptr);
+		//auto bsf = uf->getBizServiceFactory();
+		//assert(bsf != nullptr);
+		//bsf->registerService(typeid(WebRTCServiceInterface).name(), shared_from_this());
 
 		if (_sfuClient) {
 			_sfuClient->removeListener(shared_from_this());
@@ -95,7 +95,7 @@ namespace vi {
 		removeBizObserver<IWebRTCServiceListener>(_listeners, listener);
 	}
 
-	WRServiceStauts WebRTCService::status()
+	ServiceStauts WebRTCService::status()
 	{
 		return _serviceStatus;
 	}
@@ -280,7 +280,7 @@ namespace vi {
 
 	void WebRTCService::sendMessage(int64_t handleId, std::shared_ptr<SendMessageHandler> handler)
 	{
-		if (status() == WRServiceStauts::UP) {
+		if (status() == ServiceStauts::UP) {
 			if (_wrehs.find(handleId) != _wrehs.end()) {
 				const auto& wreh = _wrehs[handleId];
 				auto wself = weak_from_this();
@@ -404,7 +404,7 @@ namespace vi {
 				if (context->dtmfSender) {
 					qDebug() << "Created DTMF Sender";
 
-					context->dtmfObserver = std::make_unique<DTMFObserver>();
+					context->dtmfObserver = std::make_unique<DtmfObserver>();
 
 					auto tccb = std::make_shared<ToneChangeCallback>([](const std::string& tone, const std::string& tone_buffer) {
 						qDebug() << "Sent DTMF tone: " << tone.c_str();
@@ -880,7 +880,9 @@ namespace vi {
 			context->myStream = nullptr;
 			// Close PeerConnection
 			try {
-				context->pc->Close();
+				if (context->pc) {
+					context->pc->Close();
+				}
 			}
 			catch (...) {
 				// Do nothing
@@ -1141,9 +1143,9 @@ namespace vi {
 				self->_sessionId = model->session_id > 0 ? model->session_id : model->data.id;
 				g_sessions[self->_sessionId] = self;
 				self->startHeartbeat();
-				self->_serviceStatus = WRServiceStauts::UP;
+				self->_serviceStatus = ServiceStauts::UP;
 				self->notifyObserver4Change<IWebRTCServiceListener>(self->_listeners, [](const std::shared_ptr<IWebRTCServiceListener>& listener) {
-					listener->onStatus(WRServiceStauts::UP);
+					listener->onStatus(ServiceStauts::UP);
 				});
 				if (handler && handler->callback) {
 					const auto& cb = handler->callback;

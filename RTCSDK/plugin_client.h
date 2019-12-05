@@ -6,14 +6,14 @@
 #include "i_webrtc_event_handler.h"
 
 namespace vi {
-	class IWebRTCService;
+	class WebRTCServiceInterface;
 	class PluginClient
 		: public IPluginClient
 		, public IWebRTCEventHandler
 		, public std::enable_shared_from_this<PluginClient>
 	{
 	public:
-		PluginClient(std::shared_ptr<IWebRTCService> wrs);
+		PluginClient(std::shared_ptr<WebRTCServiceInterface> wrs);
 
 		~PluginClient();
 

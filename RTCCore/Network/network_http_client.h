@@ -54,6 +54,7 @@ protected slots:
 
 private:
     QThread _thread;
+	NetworkHttpClientWorker* _worker;
 };
 
 }

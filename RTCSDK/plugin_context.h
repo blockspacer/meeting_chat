@@ -19,8 +19,8 @@ namespace vi {
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> myStream;
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> remoteStream;
 		std::atomic_bool streamExternal = false;
-		absl::optional<JsepSt> mySdp;
-		absl::optional<JsepSt> remoteSdp;
+		absl::optional<JsepConfig> mySdp;
+		absl::optional<JsepConfig> remoteSdp;
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc;
 		std::unique_ptr<PCObserver> pcObserver;

@@ -182,11 +182,11 @@ int64_t NetworkHttpClientWorker::transformErrorCode(QNetworkReply::NetworkError 
 
 NetworkHttpClient::NetworkHttpClient()
 {
-    NetworkHttpClientWorker *worker = new NetworkHttpClientWorker(this);
-    worker->moveToThread(&_thread);
-    connect(&_thread, &QThread::finished, worker, &QObject::deleteLater, Qt::QueuedConnection);
-    connect(this, &NetworkHttpClient::_request, worker, &NetworkHttpClientWorker::request, Qt::QueuedConnection);
-    connect(worker, &NetworkHttpClientWorker::resultReady, this, &NetworkHttpClient::handleResults, Qt::QueuedConnection);
+    _worker = new NetworkHttpClientWorker(nullptr);
+	_worker->moveToThread(&_thread);
+    connect(&_thread, &QThread::finished, _worker, &QObject::deleteLater, Qt::QueuedConnection);
+    connect(this, &NetworkHttpClient::_request, _worker, &NetworkHttpClientWorker::request, Qt::QueuedConnection);
+    connect(_worker, &NetworkHttpClientWorker::resultReady, this, &NetworkHttpClient::handleResults, Qt::QueuedConnection);
     _thread.start();
 }
 
@@ -194,6 +194,7 @@ NetworkHttpClient::~NetworkHttpClient()
 {
     _thread.quit();
     _thread.wait();
+	_worker->deleteLater();
 }
 
 void NetworkHttpClient::init()

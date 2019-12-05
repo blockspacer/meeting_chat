@@ -1553,7 +1553,7 @@ namespace vi {
 		dc->RegisterObserver(observer.get());
 	}
 
-	void WebRTCService::configTracks(const MediaSt& media, rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc)
+	void WebRTCService::configTracks(const MediaConfig& media, rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc)
 	{
 		if (!pc) {
 			return;
@@ -1750,7 +1750,7 @@ namespace vi {
 
 			std::string sdp;
 			desc->ToString(&sdp);
-			JsepSt jsep{ desc->type(), sdp, false };
+			JsepConfig jsep{ desc->type(), sdp, false };
 			if (handler->answerOfferCallback) {
 				const auto& cb = handler->answerOfferCallback;
 				(*cb)(true, "", jsep);
@@ -1792,9 +1792,8 @@ namespace vi {
 			options.offer_to_receive_video = HelperUtils::isVideoRecvEnabled(media);
 		}
 
-	
-			options.offer_to_receive_audio = HelperUtils::isAudioRecvEnabled(media);
-			options.offer_to_receive_video = HelperUtils::isVideoRecvEnabled(media);
+		options.offer_to_receive_audio = HelperUtils::isAudioRecvEnabled(media);
+		options.offer_to_receive_video = HelperUtils::isVideoRecvEnabled(media);
 		options.ice_restart = handler->iceRestart.value_or(false);
 
 		bool sendVideo = HelperUtils::isVideoSendEnabled(media);
@@ -1860,7 +1859,7 @@ namespace vi {
 
 			std::string sdp;
 			desc->ToString(&sdp);
-			JsepSt jsep{ desc->type(), sdp, false };
+			JsepConfig jsep{ desc->type(), sdp, false };
 			if (handler->answerOfferCallback) {
 				const auto& cb = handler->answerOfferCallback;
 				(*cb)(true, "", jsep);

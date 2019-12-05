@@ -32,7 +32,7 @@ namespace vi {
 		std::shared_ptr<HandlerCallback> callback;
 	};
 
-	struct MediaSt {
+	struct MediaConfig {
 		bool audio = true;
 		bool video = true;
 		bool data = false;
@@ -62,18 +62,18 @@ namespace vi {
 		absl::optional<bool> failIfNoVideo;
 	};				   
 
-	struct JsepSt {
+	struct JsepConfig {
 		std::string type;
 		std::string sdp;
 		bool trickle;
 	};
 
-	using CreateAnswerOfferCallback = std::function<void(bool success, const std::string& reason, const JsepSt& jsep)>;
+	using CreateAnswerOfferCallback = std::function<void(bool success, const std::string& reason, const JsepConfig& jsep)>;
 
 	class PrepareWebRTCHandler {
 	public:
-		absl::optional<JsepSt> jsep;
-		absl::optional<MediaSt> media;
+		absl::optional<JsepConfig> jsep;
+		absl::optional<MediaConfig> media;
 		absl::optional<bool> trickle;
 		absl::optional<bool> simulcast;
 		absl::optional<bool> simulcast2;
@@ -85,7 +85,7 @@ namespace vi {
 
 	class PrepareWebRTCPeerHandler {
 	public:
-		absl::optional<JsepSt> jsep;
+		absl::optional<JsepConfig> jsep;
 		std::shared_ptr<HandlerCallback> callback;
 	};
 

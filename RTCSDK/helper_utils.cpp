@@ -3,7 +3,7 @@
 namespace vi {
 
 	// Helper methods to parse a media object
-	bool HelperUtils::isAudioSendEnabled(const absl::optional<MediaSt>& media) {
+	bool HelperUtils::isAudioSendEnabled(const absl::optional<MediaConfig>& media) {
 		if (!media)
 			return true;	// Default
 		if (media.value().audio == false)
@@ -13,7 +13,7 @@ namespace vi {
 		return (media.value().audioSend == true);
 	}
 
-	bool HelperUtils::isAudioSendRequired(const absl::optional<MediaSt>& media) {
+	bool HelperUtils::isAudioSendRequired(const absl::optional<MediaConfig>& media) {
 		if (!media)
 			return false;	// Default
 		if (media.value().audio == false || media.value().audioSend.value_or(false) == false)
@@ -23,7 +23,7 @@ namespace vi {
 		return (media.value().failIfNoAudio.value() == true);
 	}
 
-	bool HelperUtils::isAudioRecvEnabled(const absl::optional<MediaSt>& media) {
+	bool HelperUtils::isAudioRecvEnabled(const absl::optional<MediaConfig>& media) {
 		if (!media)
 			return true;	// Default
 		if (media.value().audio == false)
@@ -33,7 +33,7 @@ namespace vi {
 		return (media.value().audioRecv.value() == true);
 	}
 
-	bool HelperUtils::isVideoSendEnabled(const absl::optional<MediaSt>& media) {
+	bool HelperUtils::isVideoSendEnabled(const absl::optional<MediaConfig>& media) {
 		if (!media)
 			return true;	// Default
 		if (media.value().video == false)
@@ -43,7 +43,7 @@ namespace vi {
 		return (media.value().videoSend.value() == true);
 	}
 
-	bool HelperUtils::isVideoSendRequired(const absl::optional<MediaSt>& media) {
+	bool HelperUtils::isVideoSendRequired(const absl::optional<MediaConfig>& media) {
 		if (!media)
 			return false;	// Default
 		if (media.value().video == false || media.value().videoSend.value_or(false) == false)
@@ -53,7 +53,7 @@ namespace vi {
 		return (media.value().failIfNoVideo.value() == true);
 	}
 
-	bool HelperUtils::isVideoRecvEnabled(const absl::optional<MediaSt>& media) {
+	bool HelperUtils::isVideoRecvEnabled(const absl::optional<MediaConfig>& media) {
 		if (!media)
 			return true;	// Default
 		if (media.value().video == false)
@@ -63,13 +63,13 @@ namespace vi {
 		return (media.value().videoRecv.value() == true);
 	}
 
-	bool HelperUtils::isScreenSendEnabled(const absl::optional<MediaSt>& media) {
+	bool HelperUtils::isScreenSendEnabled(const absl::optional<MediaConfig>& media) {
 		if (!media)
 			return false;
 		return true;
 	}
 
-	bool HelperUtils::isDataEnabled(const absl::optional<MediaSt>& media) {
+	bool HelperUtils::isDataEnabled(const absl::optional<MediaConfig>& media) {
 		if (!media)
 			return false;	// Default
 		return (media.value().data == true);

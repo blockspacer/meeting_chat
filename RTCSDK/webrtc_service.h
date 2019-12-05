@@ -126,7 +126,7 @@ namespace vi {
 
 		void destroySession(std::shared_ptr<DestroySessionHandler> handler);
 
-		void configTracks(const MediaSt& media, rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc);
+		void configTracks(const MediaConfig& media, rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc);
 
 	private:
 		std::string _server;	

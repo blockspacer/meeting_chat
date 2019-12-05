@@ -97,7 +97,7 @@ namespace vi {
 			//// Answer and attach
 			auto wself = weak_from_this();
 			std::shared_ptr<PrepareWebRTCHandler> handler = std::make_shared<PrepareWebRTCHandler>();
-			auto callback = std::make_shared<CreateAnswerOfferCallback>([wself](bool success, const std::string& reason, const JsepSt& jsep) {
+			auto callback = std::make_shared<CreateAnswerOfferCallback>([wself](bool success, const std::string& reason, const JsepConfig& jsep) {
 				qDebug() << "Got a sdp, type: " << jsep.type.c_str() << ", sdp = " << jsep.sdp.c_str();
 				auto self = wself.lock();
 				if (!self) {
@@ -126,11 +126,11 @@ namespace vi {
 				}
 			});
 			handler->answerOfferCallback = callback;
-			MediaSt media;
+			MediaConfig media;
 			media.audioSend = false;
 			media.videoSend = false;
 			handler->media = media;
-			JsepSt st;
+			JsepConfig st;
 			st.type = jsep.type;
 			st.sdp = jsep.sdp;
 			handler->jsep = st;

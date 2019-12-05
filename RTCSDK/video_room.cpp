@@ -138,7 +138,7 @@ namespace vi {
 				qDebug() << "message: " << message.c_str();
 			};
 			std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
-			JsepSt jst;
+			JsepConfig jst;
 			jst.type = jsep.type;
 			jst.sdp = jsep.sdp;
 			handler->jsep = jst;
@@ -183,7 +183,7 @@ namespace vi {
 	{
 		auto wself = weak_from_this();
 		std::shared_ptr<PrepareWebRTCHandler> handler = std::make_shared<PrepareWebRTCHandler>();
-		auto callback = std::make_shared<CreateAnswerOfferCallback>([wself, audioOn](bool success, const std::string& reason, const JsepSt& jsep) {
+		auto callback = std::make_shared<CreateAnswerOfferCallback>([wself, audioOn](bool success, const std::string& reason, const JsepConfig& jsep) {
 			auto self = wself.lock();
 			if (!self) {
 				return;
@@ -212,7 +212,7 @@ namespace vi {
 			}
 		});
 		handler->answerOfferCallback = callback;
-		MediaSt media;
+		MediaConfig media;
 		media.audioRecv = false;
 		media.videoRecv = false;
 		media.audioSend = audioOn;

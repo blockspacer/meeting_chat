@@ -411,8 +411,6 @@ namespace vi {
   mutable rtc::Thread* thread_;
 
 
-// Note that the destructor is protected so that the proxy can only be
-// destroyed via RefCountInterface.
 #define WEAK_PROXY_MAP_METHOD_BOILERPLATE(c)					       \
  public:														       \
   ~c##ProxyWithInternal() {										       \

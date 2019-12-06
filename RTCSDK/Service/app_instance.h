@@ -25,6 +25,8 @@ public:
 
     std::shared_ptr<NetworkRequestManager> getNetworkRequestManager() override;
 
+	rtc::Thread* mainThread() override;
+
 protected:
     void installBizServices();
 
@@ -39,6 +41,7 @@ private:
 	std::unique_ptr<rtc::Thread> _webrtcServiceThread;
 	std::shared_ptr<vi::WebRTCServiceInterface> _webrtcService;
     std::shared_ptr<NetworkRequestManager> _nrMgr;
+	rtc::Thread* _mainThread = nullptr;
 };
 
 }

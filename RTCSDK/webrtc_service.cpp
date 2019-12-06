@@ -21,6 +21,7 @@
 #include "modules/video_capture/video_capture_factory.h"
 #include "pc/video_track_source.h"
 #include "local_video_capture.h"
+#include "service/app_instance.h"
 
 namespace vi {
 
@@ -44,7 +45,12 @@ namespace vi {
 		//auto bsf = uf->getBizServiceFactory();
 		//assert(bsf != nullptr);
 		//bsf->registerService(typeid(WebRTCServiceInterface).name(), shared_from_this());
-
+		bool main = rtc::ThreadManager::Instance()->IsMainThread();
+		rtc::Thread* thread = rtcApp->mainThread();
+		thread->PostTask(RTC_FROM_HERE, [] {
+			bool main = rtc::ThreadManager::Instance()->IsMainThread();
+			bool x = main;
+		});
 		if (_sfuClient) {
 			_sfuClient->removeListener(shared_from_this());
 			_sfuClient = nullptr;
@@ -726,7 +732,8 @@ namespace vi {
 				qDebug() << "Add audio track failed.";
 			}
 
-			rtc::scoped_refptr<CapturerTrackSource> videoDevice = CapturerTrackSource::Create();
+			// TODO: hold the videoDevice
+			static rtc::scoped_refptr<CapturerTrackSource> videoDevice = CapturerTrackSource::Create();
 			if (videoDevice) {
 				rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack(
 					_pcf->CreateVideoTrack("video_label", videoDevice));

@@ -58,7 +58,7 @@ void UI::onRegisterButtonClicked()
 {
 	vi::RegisterRequest request;
 	request.request = "join";
-	request.room = 8190;
+	request.room = 1234;
 	request.ptype = "publisher";
 	request.display = ui.lineEditUserName->text().toStdString();
 

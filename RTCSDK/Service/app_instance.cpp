@@ -24,6 +24,8 @@ AppInstance::~AppInstance()
 
 void AppInstance::initApp()
 {
+	_mainThread = rtc::ThreadManager::Instance()->CurrentThread();
+	
     TaskSchedulerManager::instance()->init();
     this->getNetworkRequestManager()->init();
 
@@ -57,6 +59,11 @@ std::shared_ptr<NetworkRequestManager> AppInstance::getNetworkRequestManager()
 std::shared_ptr<vi::WebRTCServiceInterface> AppInstance::getWebrtcService()
 {
 	return _webrtcService;
+}
+
+rtc::Thread* AppInstance::mainThread()
+{
+	return _mainThread;
 }
 
 void AppInstance::installBizServices()

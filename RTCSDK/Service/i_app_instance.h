@@ -6,6 +6,10 @@ namespace vi {
 	class WebRTCServiceInterface;
 }
 
+namespace rtc {
+	class Thread;
+}
+
 namespace core {
 
 class IUnifiedFactory;
@@ -24,6 +28,8 @@ public:
 	virtual std::shared_ptr<vi::WebRTCServiceInterface> getWebrtcService() = 0;
 
     virtual std::shared_ptr<NetworkRequestManager> getNetworkRequestManager() = 0;
+
+	virtual rtc::Thread* mainThread() = 0;
 };
 
 }

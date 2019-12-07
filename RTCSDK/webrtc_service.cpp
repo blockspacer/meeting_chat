@@ -45,12 +45,7 @@ namespace vi {
 		//auto bsf = uf->getBizServiceFactory();
 		//assert(bsf != nullptr);
 		//bsf->registerService(typeid(WebRTCServiceInterface).name(), shared_from_this());
-		bool main = rtc::ThreadManager::Instance()->IsMainThread();
-		rtc::Thread* thread = rtcApp->mainThread();
-		thread->PostTask(RTC_FROM_HERE, [] {
-			bool main = rtc::ThreadManager::Instance()->IsMainThread();
-			bool x = main;
-		});
+
 		if (_sfuClient) {
 			_sfuClient->removeListener(shared_from_this());
 			_sfuClient = nullptr;

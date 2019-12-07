@@ -7,9 +7,6 @@
 #include <QObject>
 #include <memory>
 #include "Network/network.hpp"
-#include "Thread/i_task.h"
-#include "Thread/i_task_scheduler.h"
-#include "Thread/task_scheduler_manager.h"
 #include "Service/app_instance.h"
 #include "webrtc_service_interface.h"
 #include <QSurfaceFormat>
@@ -66,10 +63,10 @@ static void registerMetaTypes()
 	qRegisterMetaType<std::shared_ptr<INetworkCallback>>("std::shared_ptr<INetworkCallback>");
 	qRegisterMetaType<std::shared_ptr<NetworkResponse>>("std::shared_ptr<NetworkResponse>");
 
-	// For Thread Model
-	qRegisterMetaType<int64_t>("int64_t");
-	qRegisterMetaType<std::shared_ptr<ITaskScheduler>>("std::shared_ptr<ITaskScheduler>");
-	qRegisterMetaType<std::shared_ptr<ITask>>("std::shared_ptr<ITask>");
+	//// For Thread Model
+	//qRegisterMetaType<int64_t>("int64_t");
+	//qRegisterMetaType<std::shared_ptr<ITaskScheduler>>("std::shared_ptr<ITaskScheduler>");
+	//qRegisterMetaType<std::shared_ptr<ITask>>("std::shared_ptr<ITask>");
 }
 
 static void initOpenGL() {

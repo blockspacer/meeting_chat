@@ -4,17 +4,16 @@
 #include "unified_factory.h"
 #include <QDebug>
 #include "notification_service.h"
-#include "Thread/task_scheduler_manager.h"
 #include "webrtc_service.h"
 #include "webrtc_service_interface.h"
 #include "webrtc_service_proxy.h"
+#include "thread_manager.h"
+#include "task_queue_manager.h"
 
 namespace core {
 
 AppInstance::AppInstance()
-	: _webrtcServiceThread(rtc::Thread::Create())
 {
-	_webrtcServiceThread->Start();
 }
 
 AppInstance::~AppInstance()
@@ -24,9 +23,16 @@ AppInstance::~AppInstance()
 
 void AppInstance::initApp()
 {
-	_mainThread = rtc::ThreadManager::Instance()->CurrentThread();
+	if (!_threadMgr) {
+		_threadMgr = std::make_shared<vi::ThreadManager>();
+		_threadMgr->init();
+	}
+
+	if (!_taskQueueMgr) {
+		_taskQueueMgr = std::make_shared<vi::TaskQueueManager>();
+		_taskQueueMgr->init();
+	}
 	
-    TaskSchedulerManager::instance()->init();
     this->getNetworkRequestManager()->init();
 
     // init services here
@@ -56,14 +62,19 @@ std::shared_ptr<NetworkRequestManager> AppInstance::getNetworkRequestManager()
     return _nrMgr;
 }
 
+std::shared_ptr<vi::ThreadManager> AppInstance::getThreadManager()
+{
+	return _threadMgr;
+}
+
+std::shared_ptr<vi::TaskQueueManager> AppInstance::getTaskQueueManager()
+{
+	return _taskQueueMgr;
+}
+
 std::shared_ptr<vi::WebRTCServiceInterface> AppInstance::getWebrtcService()
 {
 	return _webrtcService;
-}
-
-rtc::Thread* AppInstance::mainThread()
-{
-	return _mainThread;
 }
 
 void AppInstance::installBizServices()
@@ -79,7 +90,8 @@ void AppInstance::installBizServices()
 	//std::unique_ptr<webrtc::TaskQueueFactory> tqf = webrtc::CreateDefaultTaskQueueFactory();
 	//std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> wstq = tqf->CreateTaskQueue("webrtc_service", webrtc::TaskQueueFactory::Priority::NORMAL);
 
-	_webrtcService = vi::WebRTCServiceProxy::Create(_webrtcServiceThread.get(), std::make_shared<vi::WebRTCService>());
+	rtc::Thread* wst = getThreadManager()->getThread(vi::ThreadName::WEBRTC_SERVICE);
+	_webrtcService = vi::WebRTCServiceProxy::Create(wst, std::make_shared<vi::WebRTCService>());
 	_webrtcService->init();
 }
 

@@ -4,10 +4,8 @@
 
 namespace vi {
 	class WebRTCServiceInterface;
-}
-
-namespace rtc {
-	class Thread;
+	class ThreadManager;
+	class TaskQueueManager;
 }
 
 namespace core {
@@ -29,7 +27,9 @@ public:
 
     virtual std::shared_ptr<NetworkRequestManager> getNetworkRequestManager() = 0;
 
-	virtual rtc::Thread* mainThread() = 0;
+	virtual std::shared_ptr<vi::ThreadManager> getThreadManager() = 0;
+
+	virtual std::shared_ptr<vi::TaskQueueManager> getTaskQueueManager() = 0;
 };
 
 }

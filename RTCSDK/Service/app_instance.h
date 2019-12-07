@@ -25,7 +25,9 @@ public:
 
     std::shared_ptr<NetworkRequestManager> getNetworkRequestManager() override;
 
-	rtc::Thread* mainThread() override;
+	std::shared_ptr<vi::ThreadManager> getThreadManager() override;
+
+	std::shared_ptr<vi::TaskQueueManager> getTaskQueueManager() override;
 
 protected:
     void installBizServices();
@@ -38,10 +40,10 @@ private:
 private:
     friend class core::Singleton<AppInstance>;
     std::shared_ptr<IUnifiedFactory> _unifiedFactory;
-	std::unique_ptr<rtc::Thread> _webrtcServiceThread;
 	std::shared_ptr<vi::WebRTCServiceInterface> _webrtcService;
     std::shared_ptr<NetworkRequestManager> _nrMgr;
-	rtc::Thread* _mainThread = nullptr;
+	std::shared_ptr<vi::ThreadManager> _threadMgr;
+	std::shared_ptr<vi::TaskQueueManager> _taskQueueMgr;
 };
 
 }

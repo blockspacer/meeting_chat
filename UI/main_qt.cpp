@@ -24,6 +24,7 @@
 #include "local_video_capture.h"
 #include "gl_video_renderer.h"
 #include <QDebug>
+#include "task_scheduler.h"
 
 using namespace core;
 
@@ -95,6 +96,16 @@ int main(int argc, char *argv[])
 	initOpenGL();
 
 	rtcApp->initApp();
+
+	//std::shared_ptr<vi::TaskScheduler> scheduler = std::make_shared<vi::TaskScheduler>();
+	//int i = 0;
+	//uint64_t tid = scheduler->schedule([&i]() {
+	//	qDebug() << " -------------------------> execute task: " << ++i;
+	//}, 200, true);
+	//
+	//::Sleep(1000);
+	////qDebug() << " -------------------------> execute task: " << i;
+	//scheduler->cancel(tid);
 
 	//auto wrs = FetchService(vi::WebRTCServiceInterface);
 	auto wrs = rtcApp->getWebrtcService();

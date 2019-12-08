@@ -56,10 +56,10 @@ std::shared_ptr<IUnifiedFactory> AppInstance::getUnifiedFactory()
 
 std::shared_ptr<NetworkRequestManager> AppInstance::getNetworkRequestManager()
 {
-    if (!_nrMgr) {
-        _nrMgr = std::make_shared<NetworkRequestManager>();
+    if (!_networkRequestMgr) {
+		_networkRequestMgr = std::make_shared<NetworkRequestManager>();
     }
-    return _nrMgr;
+    return _networkRequestMgr;
 }
 
 std::shared_ptr<vi::ThreadManager> AppInstance::getThreadManager()
@@ -84,13 +84,7 @@ void AppInstance::installBizServices()
     auto ns = std::make_shared<NotificationService>(uf);
     ns->init();
 
-	//auto ws = std::make_shared<vi::WebRTCService>(uf);
-	//ws->init();
-
-	//std::unique_ptr<webrtc::TaskQueueFactory> tqf = webrtc::CreateDefaultTaskQueueFactory();
-	//std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter> wstq = tqf->CreateTaskQueue("webrtc_service", webrtc::TaskQueueFactory::Priority::NORMAL);
-
-	rtc::Thread* wst = getThreadManager()->getThread(vi::ThreadName::WEBRTC_SERVICE);
+	std::shared_ptr<rtc::Thread> wst = getThreadManager()->getThread(vi::ThreadName::WEBRTC_SERVICE);
 	_webrtcService = vi::WebRTCServiceProxy::Create(wst, std::make_shared<vi::WebRTCService>());
 	_webrtcService->init();
 }

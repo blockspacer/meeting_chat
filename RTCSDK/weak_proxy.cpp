@@ -8,13 +8,15 @@ namespace vi {
 		SynchronousMethodCall::~SynchronousMethodCall() = default;
 
 		void SynchronousMethodCall::Invoke(const rtc::Location& posted_from,
-			rtc::Thread* t) {
-			if (t->IsCurrent()) {
-				proxy_->OnMessage(nullptr);
-			}
-			else {
-				t->Post(posted_from, this, 0);
-				e_.Wait(rtc::Event::kForever);
+			std::weak_ptr<rtc::Thread> t) {
+			if (auto th = t.lock()) {
+				if (th->IsCurrent()) {
+					proxy_->OnMessage(nullptr);
+				}
+				else {
+					th->Post(posted_from, this, 0);
+					e_.Wait(rtc::Event::kForever);
+				}
 			}
 		}
 

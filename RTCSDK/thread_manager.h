@@ -21,10 +21,12 @@ namespace vi {
 
 		void init();
 
-		rtc::Thread* getThread(ThreadName name);
+		rtc::Thread* getMainThread();
+
+		std::shared_ptr<rtc::Thread> getThread(ThreadName name);
 
 	private:
-		std::unordered_map<ThreadName, std::unique_ptr<rtc::Thread>> _threadsMap;
+		std::unordered_map<ThreadName, std::shared_ptr<rtc::Thread>> _threadsMap;
 		
 		std::mutex _mutex;
 

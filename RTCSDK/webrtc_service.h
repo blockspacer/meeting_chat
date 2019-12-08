@@ -9,20 +9,18 @@
 #include "i_sfu_client.h"
 #include "i_sfu_client_listener.h"
 #include "callback_handlers.h"
-#include <QTimer>
 #include "webrtc_service_interface.h"
 
 namespace vi {
+	class TaskScheduler;
 	class WebRTCService
-		: public QObject
-		, public WebRTCServiceInterface
+		: public WebRTCServiceInterface
 		, public ISFUClientListener
 		, public core::Observable
 		, public std::enable_shared_from_this<WebRTCService>
 	{
-		Q_OBJECT
 	public:
-		WebRTCService(/*const std::weak_ptr<IUnifiedFactory> unifiedFactory*/);
+		WebRTCService();
 
 		~WebRTCService() override;
 
@@ -89,9 +87,6 @@ namespace vi {
 
 		void onMessage(std::shared_ptr<JanusResponse> model) override;
 
-	protected slots:
-		void heartbeat();
-
 	private:
 		int32_t getVolume(int64_t handleId, bool isRemote);
 
@@ -150,13 +145,15 @@ namespace vi {
 
 		std::shared_ptr<ISFUClient> _sfuClient;
 
-		std::shared_ptr<QTimer> _heartbeatTimer;
+		std::shared_ptr<TaskScheduler> _taskScheduler;
 
 		ServiceStauts _serviceStatus = ServiceStauts::DOWN;
 
 		std::vector<std::weak_ptr<IWebRTCServiceListener>> _listeners;
 
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> _pcf;
+
+		uint64_t _heartbeatTaskId = 0;
 	};
 }
 

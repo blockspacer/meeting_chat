@@ -147,7 +147,7 @@ namespace vi {
 			explicit SynchronousMethodCall(rtc::MessageHandler* proxy);
 			~SynchronousMethodCall() override;
 
-			void Invoke(const rtc::Location& posted_from, rtc::Thread* t);
+			void Invoke(const rtc::Location& posted_from, std::weak_ptr<rtc::Thread> t);
 
 		private:
 			void OnMessage(rtc::Message*) override;
@@ -164,7 +164,7 @@ namespace vi {
 		typedef R(C::*Method)();
 		DestroyCall(C* c, Method m) : c_(c), m_(m) {}
 
-		R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+		R Marshal(const rtc::Location& posted_from, std::weak_ptr<rtc::Thread> t) {
 			internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 			return r_.moved_result();
 		}
@@ -183,7 +183,7 @@ namespace vi {
 		typedef R(C::*Method)();
 		MethodCall0(std::weak_ptr<C> c, Method m) : c_(c), m_(m) {}
 
-		R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+		R Marshal(const rtc::Location& posted_from, std::shared_ptr<rtc::Thread> t) {
 			internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 			return r_.moved_result();
 		}
@@ -202,7 +202,7 @@ namespace vi {
 		typedef R(C::*Method)() const;
 		ConstMethodCall0(std::weak_ptr<C> c, Method m) : c_(c), m_(m) {}
 
-		R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+		R Marshal(const rtc::Location& posted_from, std::shared_ptr<rtc::Thread> t) {
 			internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 			return r_.moved_result();
 		}
@@ -221,7 +221,7 @@ namespace vi {
 		typedef R(C::*Method)(T1 a1);
 		MethodCall1(std::weak_ptr<C> c, Method m, T1 a1) : c_(c), m_(m), a1_(std::move(a1)) {}
 
-		R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+		R Marshal(const rtc::Location& posted_from, std::shared_ptr<rtc::Thread> t) {
 			internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 			return r_.moved_result();
 		}
@@ -241,7 +241,7 @@ namespace vi {
 		typedef R(C::*Method)(T1 a1) const;
 		ConstMethodCall1(std::weak_ptr<C> c, Method m, T1 a1) : c_(c), m_(m), a1_(std::move(a1)) {}
 
-		R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+		R Marshal(const rtc::Location& posted_from, std::shared_ptr<rtc::Thread> t) {
 			internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 			return r_.moved_result();
 		}
@@ -262,7 +262,7 @@ namespace vi {
 		MethodCall2(std::weak_ptr<C> c, Method m, T1 a1, T2 a2)
 			: c_(c), m_(m), a1_(std::move(a1)), a2_(std::move(a2)) {}
 
-		R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+		R Marshal(const rtc::Location& posted_from, std::shared_ptr<rtc::Thread> t) {
 			internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 			return r_.moved_result();
 		}
@@ -290,7 +290,7 @@ namespace vi {
 			a2_(std::move(a2)),
 			a3_(std::move(a3)) {}
 
-		R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+		R Marshal(const rtc::Location& posted_from, std::weak_ptr<rtc::Thread> t) {
 			internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 			return r_.moved_result();
 		}
@@ -325,7 +325,7 @@ namespace vi {
 				a3_(std::move(a3)),
 				a4_(std::move(a4)) {}
 
-			R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+			R Marshal(const rtc::Location& posted_from, std::weak_ptr<rtc::Thread> t) {
 				internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 				return r_.moved_result();
 			}
@@ -364,7 +364,7 @@ namespace vi {
 				a4_(std::move(a4)),
 				a5_(std::move(a5)) {}
 
-			R Marshal(const rtc::Location& posted_from, rtc::Thread* t) {
+			R Marshal(const rtc::Location& posted_from, std::weak_ptr<rtc::Thread> t) {
 				internal::SynchronousMethodCall(this).Invoke(posted_from, t);
 				return r_.moved_result();
 			}
@@ -391,7 +391,7 @@ namespace vi {
   class c##ProxyWithInternal;																								    \
   typedef c##ProxyWithInternal<c##Interface> c##Proxy;																		    \
   template <class INTERNAL_CLASS>																							    \
-  class c##ProxyWithInternal : public c##Interface, public std::enable_shared_from_this<c##ProxyWithInternal<INTERNAL_CLASS>> { \
+  class c##ProxyWithInternal : public c##Interface { \
   protected:																													\
   typedef c##Interface C;                               
 
@@ -404,11 +404,11 @@ namespace vi {
 
 #define WEAK_PROXY_MAP_THREAD_BOILERPLATE(c)											 \
  public:																				 \
-  c##ProxyWithInternal(rtc::Thread* thread, std::shared_ptr<INTERNAL_CLASS> c)			 \
+  c##ProxyWithInternal(std::shared_ptr<rtc::Thread> thread, std::shared_ptr<INTERNAL_CLASS> c)			 \
       : thread_(thread), c_(c) {}														 \
 																						 \
  private:																				 \
-  mutable rtc::Thread* thread_;
+  mutable std::shared_ptr<rtc::Thread> thread_;
 
 
 #define WEAK_PROXY_MAP_METHOD_BOILERPLATE(c)					       \
@@ -429,13 +429,13 @@ namespace vi {
   WEAK_PROXY_MAP_METHOD_BOILERPLATE(c)								   \
  public:                                                               \
   static std::shared_ptr<c##ProxyWithInternal> Create(				   \
-      rtc::Thread* thread, std::shared_ptr<INTERNAL_CLASS> c) {		   \
+      std::shared_ptr<rtc::Thread> thread, std::shared_ptr<INTERNAL_CLASS> c) {		   \
     return std::make_shared<c##ProxyWithInternal>(thread, c);          \
   }
 
 #define WEAK_PROXY_THREAD_DESTRUCTOR()								   \
  private:                                                              \
-  rtc::Thread* destructor_thread() const { return thread_; }		   \
+  std::shared_ptr<rtc::Thread> destructor_thread() const { return thread_; }		   \
                                                                        \
  public:  // NOLINTNEXTLINE
 

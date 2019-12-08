@@ -1,6 +1,7 @@
 #include "thread_manager.h"
 #include <memory>
 #include <mutex>
+#include <QDebug>
 
 namespace vi {
 	ThreadManager::ThreadManager()
@@ -9,6 +10,7 @@ namespace vi {
 
 	ThreadManager::~ThreadManager()
 	{
+		qDebug() << "~ThreadManager()";
 	}
 
 	void ThreadManager::init() 
@@ -30,13 +32,15 @@ namespace vi {
 		}
 	}
 
-	rtc::Thread* ThreadManager::getThread(ThreadName name) 
+	rtc::Thread* ThreadManager::getMainThread()
 	{
-		std::lock_guard<std::mutex> lock(_mutex);
-		if (ThreadName::MAIN == name) {
-			return _mainThread;
-		} else if (_threadsMap.find(name) != _threadsMap.end()) {
-			return _threadsMap[name].get();
+		return _mainThread;
+	}
+
+	std::shared_ptr<rtc::Thread> ThreadManager::getThread(ThreadName name)
+	{
+		if (_threadsMap.find(name) != _threadsMap.end()) {
+			return _threadsMap[name];
 		}
 
 		return nullptr;

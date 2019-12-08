@@ -1,7 +1,6 @@
 #include "webrtc_service.h"
 #include "Service/unified_factory.h"
 #include "janus_client.h"
-#include "Thread/async.h"
 #include "i_webrtc_event_handler.h"
 #include "helper_utils.h"
 #include "api/jsep.h"
@@ -22,13 +21,14 @@
 #include "pc/video_track_source.h"
 #include "local_video_capture.h"
 #include "service/app_instance.h"
+#include "task_scheduler.h"
+#include <QDebug>
 
 namespace vi {
 
 	static std::unordered_map<int64_t, std::weak_ptr<WebRTCService>> g_sessions;
 
-	WebRTCService::WebRTCService(/*const std::weak_ptr<IUnifiedFactory> unifiedFactory*/)
-		//: WebRTCServiceInterface(unifiedFactory)
+	WebRTCService::WebRTCService()
 	{
 		_iceServers.emplace_back("stun:stun.l.google.com:19302");
 	}
@@ -36,16 +36,14 @@ namespace vi {
 	WebRTCService::~WebRTCService()
 	{
 		_pcf = nullptr;
+		if (_taskScheduler) {
+			_taskScheduler->cancelAll();
+		}
+		qDebug() << "~WebRTCService";
 	}
 
 	void WebRTCService::init()
 	{
-		//auto uf = _unifiedFactory.lock();
-		//assert(uf != nullptr);
-		//auto bsf = uf->getBizServiceFactory();
-		//assert(bsf != nullptr);
-		//bsf->registerService(typeid(WebRTCServiceInterface).name(), shared_from_this());
-
 		if (_sfuClient) {
 			_sfuClient->removeListener(shared_from_this());
 			_sfuClient = nullptr;
@@ -54,8 +52,7 @@ namespace vi {
 		_sfuClient->init();
 		_sfuClient->addListener(shared_from_this());
 
-		_heartbeatTimer = std::make_shared<QTimer>();
-		QObject::connect(_heartbeatTimer.get(), &QTimer::timeout, this, &WebRTCService::heartbeat);
+		_taskScheduler = std::make_shared<vi::TaskScheduler>();
 
 		if (!_pcf) {
 			_pcf = webrtc::CreatePeerConnectionFactory(
@@ -728,7 +725,7 @@ namespace vi {
 			}
 
 			// TODO: hold the videoDevice
-			static rtc::scoped_refptr<CapturerTrackSource> videoDevice = CapturerTrackSource::Create();
+			rtc::scoped_refptr<CapturerTrackSource> videoDevice = CapturerTrackSource::Create();
 			if (videoDevice) {
 				rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack(
 					_pcf->CreateVideoTrack("video_label", videoDevice));
@@ -749,24 +746,12 @@ namespace vi {
 
 	void WebRTCService::createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler)
 	{
-		auto wself = std::weak_ptr<WebRTCService>(shared_from_this());
-		core::Async::dispatchToMain([wself, handleId, handler]() {
-			if (auto self = wself.lock()) {
-				self->prepareWebrtc(handleId, true, handler);
-			}
-		});
-		//prepareWebrtc(handleId, true, handler);
+		prepareWebrtc(handleId, true, handler);
 	}
 
 	void WebRTCService::createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler)
 	{
-		auto wself = std::weak_ptr<WebRTCService>(shared_from_this());
-		core::Async::dispatchToMain([wself, handleId, handler]() {
-			if (auto self = wself.lock()) {
-				self->prepareWebrtc(handleId, false, handler);
-			}
-		});
-		//prepareWebrtc(handleId, false, handler);
+		prepareWebrtc(handleId, false, handler);
 	}
 
 	void WebRTCService::prepareWebrtcPeer(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerHandler> handler)
@@ -1126,16 +1111,6 @@ namespace vi {
 		}
 	}
 
-	void WebRTCService::heartbeat()
-	{
-		std::cout << "sessionHeartbeat() called" << std::endl;
-		auto lambda = [](std::shared_ptr<JanusResponse> model) {
-			std::cout << "model->janus = " << model->janus << std::endl;
-		};
-		std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
-		_sfuClient->keepAlive(_sessionId, callback);
-	}
-
 	void WebRTCService::createSession(std::shared_ptr<CreateSessionHandler> handler)
 	{
 		auto wself = std::weak_ptr<WebRTCService>(shared_from_this());
@@ -1167,14 +1142,16 @@ namespace vi {
 	void WebRTCService::startHeartbeat()
 	{
 		auto wself = std::weak_ptr<WebRTCService>(shared_from_this());
-		core::Async::dispatchToMain([wself]() {
+		_heartbeatTaskId = _taskScheduler->schedule([wself]() {
 			if (auto self = wself.lock()) {
-				if (self->_heartbeatTimer) {
-					self->_heartbeatTimer->stop();
-				}
-				self->_heartbeatTimer->start(5000);
+				qDebug() << "sessionHeartbeat() called";
+				auto lambda = [](std::shared_ptr<JanusResponse> model) {
+					std::cout << "model->janus = " << model->janus << std::endl;
+				};
+				std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
+				self->_sfuClient->keepAlive(self->_sessionId, callback);
 			}
-		});
+		}, 5000, true);
 	}
 
 	std::shared_ptr<IWebRTCEventHandler> WebRTCService::getHandler(int64_t handleId)

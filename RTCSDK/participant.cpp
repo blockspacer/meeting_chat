@@ -43,13 +43,7 @@ namespace vi {
 				std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
 				handler->message = x2struct::X::tojson(request);
 				handler->callback = callback;
-				auto wself = std::weak_ptr<PluginClient>(shared_from_this());
-				core::Async::dispatchToMain([wself, handler]() {
-					if (auto self = wself.lock()) {
-						self->sendMessage(handler);
-					}
-				});
-				//sendMessage(handler);
+				sendMessage(handler);
 			}
 		}
 		else {

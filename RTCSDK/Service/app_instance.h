@@ -41,7 +41,7 @@ private:
     friend class core::Singleton<AppInstance>;
     std::shared_ptr<IUnifiedFactory> _unifiedFactory;
 	std::shared_ptr<vi::WebRTCServiceInterface> _webrtcService;
-    std::shared_ptr<NetworkRequestManager> _nrMgr;
+    std::shared_ptr<NetworkRequestManager> _networkRequestMgr;
 	std::shared_ptr<vi::ThreadManager> _threadMgr;
 	std::shared_ptr<vi::TaskQueueManager> _taskQueueMgr;
 };

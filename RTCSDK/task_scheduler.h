@@ -13,9 +13,9 @@
 
 namespace vi {
 	template<class Closure>
-	class ScheduledTask: public webrtc::QueuedTask {
+	class OneShotTask: public webrtc::QueuedTask {
 	public:
-		explicit ScheduledTask(Closure&& closure, uint64_t id, std::weak_ptr<TaskScheduler> scheduler)
+		explicit OneShotTask(Closure&& closure, uint64_t id, std::weak_ptr<TaskScheduler> scheduler)
 			: _closure(std::forward<Closure>(closure))
 			, _id(id)
 			, _scheduler(scheduler) {
@@ -92,10 +92,10 @@ namespace vi {
 		template <class Closure>
 		uint64_t schedule(Closure&& closure, uint32_t milliseconds = 0, bool repetitive = false) {
 			if (!repetitive) {
-				return createOneShotTask(std::forward<Closure>(closure), milliseconds);
+				return scheduleOneShotTask(std::forward<Closure>(closure), milliseconds);
 			}
 			else {
-				return createRepetitiveTask(std::forward<Closure>(closure), milliseconds);
+				return scheduleRepetitiveTask(std::forward<Closure>(closure), milliseconds);
 			}
 		}
 
@@ -122,9 +122,9 @@ namespace vi {
 		}
 
 		template <class Closure>
-		uint64_t createOneShotTask(Closure&& closure, uint32_t milliseconds) {
+		uint64_t scheduleOneShotTask(Closure&& closure, uint32_t milliseconds) {
 			uint64_t id = rtc::CreateRandomId64();
-			auto task = createScheduledTask(std::forward<Closure>(closure), id);
+			auto task = createOneShotTask(std::forward<Closure>(closure), id);
 			{
 				std::lock_guard<std::mutex> lock(_mutex);
 				_taskIdSet.emplace(id);
@@ -135,7 +135,7 @@ namespace vi {
 		}
 
 		template <class Closure>
-		uint64_t createRepetitiveTask(Closure&& closure, uint32_t milliseconds) {
+		uint64_t scheduleRepetitiveTask(Closure&& closure, uint32_t milliseconds) {
 			uint64_t id = rtc::CreateRandomId64();
 			auto task = createRepetitiveTask(std::forward<Closure>(closure), milliseconds, id);
 			{
@@ -148,8 +148,8 @@ namespace vi {
 		}
 
 		template <typename Closure>
-		std::unique_ptr<webrtc::QueuedTask> createScheduledTask(Closure&& closure, uint64_t id) {
-			return std::make_unique<ScheduledTask<Closure>>(std::forward<Closure>(closure), id, weak_from_this());
+		std::unique_ptr<webrtc::QueuedTask> createOneShotTask(Closure&& closure, uint64_t id) {
+			return std::make_unique<OneShotTask<Closure>>(std::forward<Closure>(closure), id, weak_from_this());
 		}
 
 		template <typename Closure>

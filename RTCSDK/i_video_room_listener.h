@@ -12,6 +12,8 @@ namespace vi {
 	protected:
 		virtual void onCreateParticipant(std::shared_ptr<Participant> participant) = 0;
 
+		virtual void onUpdateParticipant(std::shared_ptr<Participant> participant) = 0;
+
 		virtual void onRemoveParticipant(std::shared_ptr<Participant> participant) = 0;
 	};
 }

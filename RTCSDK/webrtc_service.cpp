@@ -22,6 +22,8 @@
 #include "local_video_capture.h"
 #include "service/app_instance.h"
 #include "task_scheduler.h"
+#include "sfu_client_listener.h"
+#include "rtc_base/thread.h"
 #include <QDebug>
 
 namespace vi {
@@ -42,15 +44,11 @@ namespace vi {
 		qDebug() << "~WebRTCService";
 	}
 
-	void WebRTCService::init()
+	void WebRTCService::init(std::shared_ptr<ISFUClient> client)
 	{
-		if (_sfuClient) {
-			_sfuClient->removeListener(shared_from_this());
-			_sfuClient = nullptr;
-		}
-		_sfuClient = std::make_shared<vi::JanusClient>("ws://106.13.6.35:8188/janus");
-		_sfuClient->init();
-		_sfuClient->addListener(shared_from_this());
+		_client = client;
+
+		_client->init();
 
 		_taskScheduler = std::make_shared<vi::TaskScheduler>();
 
@@ -120,7 +118,7 @@ namespace vi {
 			}
 		};
 		std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
-		_sfuClient->attach(_sessionId, plugin, opaqueId, callback);
+		_client->attach(_sessionId, plugin, opaqueId, callback);
 	}
 
 	void WebRTCService::destroy(std::shared_ptr<DestroySessionEvent> event)
@@ -302,7 +300,7 @@ namespace vi {
 					}
 				};
 				std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
-				_sfuClient->sendMessage(_sessionId, handleId, event->message, event->jsep, callback);
+				_client->sendMessage(_sessionId, handleId, event->message, event->jsep, callback);
 			}
 		}
 		else {
@@ -843,7 +841,7 @@ namespace vi {
 					}
 				};
 				std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
-				_sfuClient->hangup(_sessionId, handleId, callback);
+				_client->hangup(_sessionId, handleId, callback);
 			}
 			context->remoteStream = nullptr;
 			try {
@@ -925,7 +923,7 @@ namespace vi {
 			}
 		};
 		std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
-		_sfuClient->detach(_sessionId, handleId, callback);
+		_client->detach(_sessionId, handleId, callback);
 	}
 
 	void WebRTCService::detach(int64_t handleId, std::shared_ptr<DetachEvent> event) 
@@ -1132,10 +1130,10 @@ namespace vi {
 		};
 		std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
 		if (event && event->reconnect) {
-			_sfuClient->reconnectSession(_sessionId, callback);
+			_client->reconnectSession(_sessionId, callback);
 		}
 		else {
-			_sfuClient->createSession(callback);
+			_client->createSession(callback);
 		}
 	}
 
@@ -1149,7 +1147,7 @@ namespace vi {
 					std::cout << "model->janus = " << model->janus << std::endl;
 				};
 				std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
-				self->_sfuClient->keepAlive(self->_sessionId, callback);
+				self->_client->keepAlive(self->_sessionId, callback);
 			}
 		}, 5000, true);
 	}
@@ -1296,7 +1294,7 @@ namespace vi {
 				data.completed = false;
 
 				if (wreh->pluginContext()->webrtcContext->trickle) {
-					self->_sfuClient->sendTrickleCandidate(self->_sessionId, handleId, data, nullptr);
+					self->_client->sendTrickleCandidate(self->_sessionId, handleId, data, nullptr);
 				}
 				else {
 					self->sendSDP(handleId, event);
@@ -1887,7 +1885,7 @@ namespace vi {
 				dh->callback = std::make_shared<vi::EventCallback>(lambda);
 				destroyHandle(hId, dh);
 			}
-			//_sfuClient->removeListener(shared_from_this());
+			//_client->removeListener(shared_from_this());
 			_wrehs.clear();
 		}
 		if (!_connected) {

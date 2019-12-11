@@ -63,13 +63,13 @@ void UI::onRegisterButtonClicked()
 	request.display = ui.lineEditUserName->text().toStdString();
 
 	if (_vr) {
-		std::shared_ptr<vi::SendMessageEvent> handler = std::make_shared<vi::SendMessageEvent>();
+		std::shared_ptr<vi::SendMessageEvent> event = std::make_shared<vi::SendMessageEvent>();
 		auto lambda = [](bool success, const std::string& message) {
 			qDebug() << "message: " << message.c_str();
 		};
 		std::shared_ptr<vi::EventCallback> callback = std::make_shared<vi::EventCallback>(lambda);
-		handler->message = x2struct::X::tojson(request);
-		handler->callback = callback;
-		_vr->sendMessage(handler);
+		event->message = x2struct::X::tojson(request);
+		event->callback = callback;
+		_vr->sendMessage(event);
 	}
 }

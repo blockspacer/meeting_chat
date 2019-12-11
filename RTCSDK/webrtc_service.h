@@ -24,7 +24,7 @@ namespace vi {
 
 		~WebRTCService() override;
 
-		void init() override;
+		void init(std::shared_ptr<ISFUClient> client) override;
 
 		void cleanup() override;
 
@@ -79,6 +79,7 @@ namespace vi {
 
 	protected:
 		// ISFUClientListener
+
 	    void onOpened() override;
 
 		void onClosed() override;
@@ -143,7 +144,7 @@ namespace vi {
 
 		std::unordered_map<int64_t, std::shared_ptr<IWebRTCEventHandler>> _wrehs;
 
-		std::shared_ptr<ISFUClient> _sfuClient;
+		std::shared_ptr<ISFUClient> _client;
 
 		std::shared_ptr<TaskScheduler> _taskScheduler;
 

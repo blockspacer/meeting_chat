@@ -9,6 +9,8 @@
 #include "webrtc_service_proxy.h"
 #include "thread_manager.h"
 #include "task_queue_manager.h"
+#include "sfu_client_listener.h"
+#include "janus_client.h"
 
 namespace core {
 
@@ -37,6 +39,8 @@ void AppInstance::initApp()
 
     // init services here
     installBizServices();
+
+	installWebRTCService();
 }
 
 void AppInstance::clearnup()
@@ -83,10 +87,23 @@ void AppInstance::installBizServices()
 
     auto ns = std::make_shared<NotificationService>(uf);
     ns->init();
+}
 
+void AppInstance::installWebRTCService()
+{
 	std::shared_ptr<rtc::Thread> wst = getThreadManager()->getThread(vi::ThreadName::WEBRTC_SERVICE);
-	_webrtcService = vi::WebRTCServiceProxy::Create(wst, std::make_shared<vi::WebRTCService>());
-	_webrtcService->init();
+
+	auto wsi = std::make_shared<vi::WebRTCService>();
+	_webrtcService = vi::WebRTCServiceProxy::Create(wst, wsi);
+
+	auto scl = std::make_shared<vi::SFUClientListener>();
+	_proxy = vi::SFUClientListenerProxy::Create(wst, scl);
+	_proxy->init(wsi);
+
+	auto jc = std::make_shared<vi::JanusClient>("ws://106.13.6.35:8188/janus");
+	jc->addListener(_proxy);
+
+	_webrtcService->init(jc);
 }
 
 }

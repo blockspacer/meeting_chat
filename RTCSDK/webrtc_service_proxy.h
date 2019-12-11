@@ -6,7 +6,7 @@
 namespace vi {
 	BEGIN_WEAK_PROXY_MAP(WebRTCService)
 		WEAK_PROXY_THREAD_DESTRUCTOR()
-		WEAK_PROXY_METHOD0(void, init)
+		WEAK_PROXY_METHOD1(void, init, std::shared_ptr<ISFUClient>)
 		WEAK_PROXY_METHOD0(void, cleanup)
 		WEAK_PROXY_METHOD1(void, addListener, std::shared_ptr<IWebRTCServiceListener>)
 		WEAK_PROXY_METHOD1(void, removeListener, std::shared_ptr<IWebRTCServiceListener>)

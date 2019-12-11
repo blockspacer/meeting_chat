@@ -385,7 +385,7 @@ namespace vi {
 			T5 a5_;
 	};
 
-	// Helper macros to reduce code duplication.
+// Helper macros to reduce code duplication.
 #define WEAK_PROXY_MAP_DEFINE_BOILERPLATE(c)			\
   template <class INTERNAL_CLASS>						\
   class c##ProxyWithInternal;							\

@@ -121,7 +121,7 @@
     <ClCompile Include="webrtc_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sfu_client_listener.h" />
+    <ClInclude Include="sfu_listener_proxy.h" />
     <ClInclude Include="webrtc_service_events.h" />
     <QtMoc Include="gl_video_renderer.h" />
     <ClInclude Include="gl_video_shader.h" />

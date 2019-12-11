@@ -22,7 +22,6 @@
 #include "local_video_capture.h"
 #include "service/app_instance.h"
 #include "task_scheduler.h"
-#include "sfu_client_listener.h"
 #include "rtc_base/thread.h"
 #include <QDebug>
 
@@ -1315,43 +1314,9 @@ namespace vi {
 			});
 			context->pcObserver->setTrackCallback(tcb);
 
+			
+
 			context->pc = _pcf->CreatePeerConnection(pcConfig, nullptr, nullptr, context->pcObserver.get());
-
-			//rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack(
-			//	_pcf->CreateAudioTrack("audio_label", _pcf->CreateAudioSource(cricket::AudioOptions())));
-			//std::string id = audioTrack->id();
-
-			//rtc::scoped_refptr<CapturerTrackSource> videoDevice = CapturerTrackSource::Create();
-			//if (videoDevice) {
-			//	rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack(
-			//		_pcf->CreateVideoTrack("video_label", videoDevice));
-			//}
-
-			//rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(
-			//	_pcf->CreateAudioTrack(
-			//		"audio_label", _pcf->CreateAudioSource(
-			//			cricket::AudioOptions())));
-			//auto result_or_error = context->pc->AddTrack(audio_track, { "stream_id" });
-			//if (!result_or_error.ok()) {
-			//	RTC_LOG(LS_ERROR) << "Failed to add audio track to PeerConnection: "
-			//		<< result_or_error.error().message();
-			//}
-
-			//rtc::scoped_refptr<CapturerTrackSource> video_device =
-			//	CapturerTrackSource::Create();
-			//if (video_device) {
-			//	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track_(
-			//		_pcf->CreateVideoTrack("video_label", video_device));
-
-			//	result_or_error = context->pc->AddTrack(video_track_, { "stream_id" });
-			//	if (!result_or_error.ok()) {
-			//		RTC_LOG(LS_ERROR) << "Failed to add video track to PeerConnection: "
-			//			<< result_or_error.error().message();
-			//	}
-			//}
-			//else {
-			//	RTC_LOG(LS_ERROR) << "OpenVideoCaptureDevice failed";
-			//}
 
 			if (addTracks && stream) {
 				bool simulcast2 = event->simulcast2.value_or(false);

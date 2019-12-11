@@ -9,7 +9,7 @@
 #include "webrtc_service_proxy.h"
 #include "thread_manager.h"
 #include "task_queue_manager.h"
-#include "sfu_client_listener.h"
+#include "sfu_listener_proxy.h"
 #include "janus_client.h"
 
 namespace core {
@@ -96,12 +96,12 @@ void AppInstance::installWebRTCService()
 	auto wsi = std::make_shared<vi::WebRTCService>();
 	_webrtcService = vi::WebRTCServiceProxy::Create(wst, wsi);
 
-	auto scl = std::make_shared<vi::SFUClientListener>();
-	_proxy = vi::SFUClientListenerProxy::Create(wst, scl);
-	_proxy->init(wsi);
+	auto scl = std::make_shared<vi::SFUListener>();
+	_sfuListener = vi::SFUListenerProxy::Create(wst, scl);
+	_sfuListener->init(wsi);
 
 	auto jc = std::make_shared<vi::JanusClient>("ws://106.13.6.35:8188/janus");
-	jc->addListener(_proxy);
+	jc->addListener(_sfuListener);
 
 	_webrtcService->init(jc);
 }

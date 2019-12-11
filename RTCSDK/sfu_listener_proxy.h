@@ -4,9 +4,9 @@
 #include "weak_proxy.h"
 
 namespace vi {
-	class SFUClientListenerInterface : public ISFUClientListener {
+	class SFUListenerInterface : public ISFUClientListener {
 	public:
-		virtual ~SFUClientListenerInterface() {}
+		virtual ~SFUListenerInterface() {}
 
 		virtual void init(std::shared_ptr<ISFUClientListener> listener) = 0;
 
@@ -19,9 +19,9 @@ namespace vi {
 		void onMessage(std::shared_ptr<JanusResponse> model) override {}
 	};
 
-	class SFUClientListener : public SFUClientListenerInterface {
+	class SFUListener : public SFUListenerInterface {
 	public:
-		~SFUClientListener() {
+		~SFUListener() {
 
 		}
 		void init(std::shared_ptr<ISFUClientListener> listener) {
@@ -55,7 +55,7 @@ namespace vi {
 		std::weak_ptr<ISFUClientListener> _listener;
 	};
 
-	BEGIN_WEAK_PROXY_MAP(SFUClientListener)
+	BEGIN_WEAK_PROXY_MAP(SFUListener)
 		WEAK_PROXY_THREAD_DESTRUCTOR()
 		WEAK_PROXY_METHOD1(void, init, std::shared_ptr<ISFUClientListener>)
 		WEAK_PROXY_METHOD0(void, onOpened)

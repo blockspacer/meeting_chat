@@ -43,21 +43,21 @@ namespace vi {
 
 		std::string getBitrate() override;
 
-		void sendMessage(std::shared_ptr<SendMessageHandler> handler) override;
+		void sendMessage(std::shared_ptr<SendMessageEvent> event) override;
 
-		void sendData(std::shared_ptr<SendDataHandler> handler) override;
+		void sendData(std::shared_ptr<SendDataEvent> event) override;
 
-		void sendDtmf(std::shared_ptr<SendDtmfHandler> handler) override;
+		void sendDtmf(std::shared_ptr<SendDtmfEvent> event) override;
 
-		void createOffer(std::shared_ptr<PrepareWebRTCHandler> handler) override;
+		void createOffer(std::shared_ptr<PrepareWebRTCEvent> event) override;
 
-		void createAnswer(std::shared_ptr<PrepareWebRTCHandler> handler) override;
+		void createAnswer(std::shared_ptr<PrepareWebRTCEvent> event) override;
 
-		void handleRemoteJsep(std::shared_ptr<PrepareWebRTCPeerHandler> handler) override;
+		void handleRemoteJsep(std::shared_ptr<PrepareWebRTCPeerEvent> event) override;
 
 		void hangup(bool sendRequest) override;
 
-		void detach(std::shared_ptr<DetachHandler> handler) override;
+		void detach(std::shared_ptr<DetachEvent> event) override;
 
 	protected:
 		int64_t _id;

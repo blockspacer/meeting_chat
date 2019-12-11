@@ -4,7 +4,7 @@
 #include "video_room.h"
 #include "message_models.h"
 #include "string_utils.h"
-#include "callback_handlers.h"
+#include "webrtc_service_events.h"
 #include "x2struct.hpp"
 #include <QDebug>
 
@@ -63,11 +63,11 @@ void UI::onRegisterButtonClicked()
 	request.display = ui.lineEditUserName->text().toStdString();
 
 	if (_vr) {
-		std::shared_ptr<vi::SendMessageHandler> handler = std::make_shared<vi::SendMessageHandler>();
+		std::shared_ptr<vi::SendMessageEvent> handler = std::make_shared<vi::SendMessageEvent>();
 		auto lambda = [](bool success, const std::string& message) {
 			qDebug() << "message: " << message.c_str();
 		};
-		std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
+		std::shared_ptr<vi::EventCallback> callback = std::make_shared<vi::EventCallback>(lambda);
 		handler->message = x2struct::X::tojson(request);
 		handler->callback = callback;
 		_vr->sendMessage(handler);

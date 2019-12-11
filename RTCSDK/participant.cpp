@@ -36,14 +36,14 @@ namespace vi {
 			// 'offer_data' properties to false (they're true by default), e.g.:
 			// 		subscribe["offer_video"] = false;
 			if (auto wreh = _pluginContext->webrtcService.lock()) {
-				std::shared_ptr<SendMessageHandler> handler = std::make_shared<vi::SendMessageHandler>();
+				std::shared_ptr<SendMessageEvent> event = std::make_shared<vi::SendMessageEvent>();
 				auto lambda = [](bool success, const std::string& message) {
 					std::string text = message;
 				};
-				std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
-				handler->message = x2struct::X::tojson(request);
-				handler->callback = callback;
-				sendMessage(handler);
+				std::shared_ptr<vi::EventCallback> callback = std::make_shared<vi::EventCallback>(lambda);
+				event->message = x2struct::X::tojson(request);
+				event->callback = callback;
+				sendMessage(event);
 			}
 		}
 		else {
@@ -90,7 +90,7 @@ namespace vi {
 			qDebug() << "Handling SDP as well...";
 			//// Answer and attach
 			auto wself = weak_from_this();
-			std::shared_ptr<PrepareWebRTCHandler> handler = std::make_shared<PrepareWebRTCHandler>();
+			std::shared_ptr<PrepareWebRTCEvent> event = std::make_shared<PrepareWebRTCEvent>();
 			auto callback = std::make_shared<CreateAnswerOfferCallback>([wself](bool success, const std::string& reason, const JsepConfig& jsep) {
 				qDebug() << "Got a sdp, type: " << jsep.type.c_str() << ", sdp = " << jsep.sdp.c_str();
 				auto self = wself.lock();
@@ -101,34 +101,34 @@ namespace vi {
 					StartRequest request;
 					request.room = 1234;
 					if (auto wreh = self->pluginContext()->webrtcService.lock()) {
-						std::shared_ptr<SendMessageHandler> handler = std::make_shared<vi::SendMessageHandler>();
+						std::shared_ptr<SendMessageEvent> event = std::make_shared<vi::SendMessageEvent>();
 						auto lambda = [](bool success, const std::string& message) {
 							qDebug() << "message: " << message.c_str();
 						};
-						std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
-						handler->message = x2struct::X::tojson(request);
+						std::shared_ptr<vi::EventCallback> callback = std::make_shared<vi::EventCallback>(lambda);
+						event->message = x2struct::X::tojson(request);
 						Jsep jp;
 						jp.type = jsep.type;
 						jp.sdp = jsep.sdp;
-						handler->jsep = x2struct::X::tojson(jp);
-						handler->callback = callback;
-						self->sendMessage(handler);
+						event->jsep = x2struct::X::tojson(jp);
+						event->callback = callback;
+						self->sendMessage(event);
 					}
 				}
 				else {
 					qDebug() << "WebRTC error: " << reason.c_str();
 				}
 			});
-			handler->answerOfferCallback = callback;
+			event->answerOfferCallback = callback;
 			MediaConfig media;
 			media.audioSend = false;
 			media.videoSend = false;
-			handler->media = media;
+			event->media = media;
 			JsepConfig st;
 			st.type = jsep.type;
 			st.sdp = jsep.sdp;
-			handler->jsep = st;
-			createAnswer(handler);
+			event->jsep = st;
+			createAnswer(event);
 		}
 	}
 

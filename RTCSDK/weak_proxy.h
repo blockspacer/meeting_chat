@@ -386,13 +386,13 @@ namespace vi {
 	};
 
 	// Helper macros to reduce code duplication.
-#define WEAK_PROXY_MAP_DEFINE_BOILERPLATE(c)																				    \
-  template <class INTERNAL_CLASS>																							    \
-  class c##ProxyWithInternal;																								    \
-  typedef c##ProxyWithInternal<c##Interface> c##Proxy;																		    \
-  template <class INTERNAL_CLASS>																							    \
-  class c##ProxyWithInternal : public c##Interface { \
-  protected:																													\
+#define WEAK_PROXY_MAP_DEFINE_BOILERPLATE(c)			\
+  template <class INTERNAL_CLASS>						\
+  class c##ProxyWithInternal;							\
+  typedef c##ProxyWithInternal<c##Interface> c##Proxy;	\
+  template <class INTERNAL_CLASS>						\
+  class c##ProxyWithInternal : public c##Interface {    \
+  protected:											\
   typedef c##Interface C;                               
 
 // clang-format off
@@ -402,12 +402,12 @@ namespace vi {
   };
 // clang-format on
 
-#define WEAK_PROXY_MAP_THREAD_BOILERPLATE(c)											 \
- public:																				 \
-  c##ProxyWithInternal(std::shared_ptr<rtc::Thread> thread, std::shared_ptr<INTERNAL_CLASS> c)			 \
-      : thread_(thread), c_(c) {}														 \
-																						 \
- private:																				 \
+#define WEAK_PROXY_MAP_THREAD_BOILERPLATE(c)													\
+ public:																						\
+  c##ProxyWithInternal(std::shared_ptr<rtc::Thread> thread, std::shared_ptr<INTERNAL_CLASS> c)	\
+      : thread_(thread), c_(c) {}																\
+																								\
+ private:																						\
   mutable std::shared_ptr<rtc::Thread> thread_;
 
 
@@ -423,20 +423,20 @@ namespace vi {
   void DestroyInternal() { c_ = nullptr; }							   \
   std::shared_ptr<INTERNAL_CLASS> c_;
 
-#define BEGIN_WEAK_PROXY_MAP(c)									       \
-  WEAK_PROXY_MAP_DEFINE_BOILERPLATE(c)                                 \
-  WEAK_PROXY_MAP_THREAD_BOILERPLATE(c)                                 \
-  WEAK_PROXY_MAP_METHOD_BOILERPLATE(c)								   \
- public:                                                               \
-  static std::shared_ptr<c##ProxyWithInternal> Create(				   \
-      std::shared_ptr<rtc::Thread> thread, std::shared_ptr<INTERNAL_CLASS> c) {		   \
-    return std::make_shared<c##ProxyWithInternal>(thread, c);          \
+#define BEGIN_WEAK_PROXY_MAP(c)													\
+  WEAK_PROXY_MAP_DEFINE_BOILERPLATE(c)											\
+  WEAK_PROXY_MAP_THREAD_BOILERPLATE(c)											\
+  WEAK_PROXY_MAP_METHOD_BOILERPLATE(c)											\
+ public:																		\
+  static std::shared_ptr<c##ProxyWithInternal> Create(							\
+      std::shared_ptr<rtc::Thread> thread, std::shared_ptr<INTERNAL_CLASS> c) {	\
+    return std::make_shared<c##ProxyWithInternal>(thread, c);					\
   }
 
-#define WEAK_PROXY_THREAD_DESTRUCTOR()								   \
- private:                                                              \
-  std::shared_ptr<rtc::Thread> destructor_thread() const { return thread_; }		   \
-                                                                       \
+#define WEAK_PROXY_THREAD_DESTRUCTOR()											\
+ private:																		\
+  std::shared_ptr<rtc::Thread> destructor_thread() const { return thread_; }	\
+																				\
  public:  // NOLINTNEXTLINE
 
 #define WEAK_PROXY_METHOD0(r, method)                      \

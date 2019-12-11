@@ -19,6 +19,16 @@ namespace vi {
 		}
 	}
 
+	void VideoRoom::addListener(std::shared_ptr<IVideoRoomListener> listener)
+	{
+		addBizObserver<IVideoRoomListener>(_listeners, listener);
+	}
+
+	void VideoRoom::removeListener(std::shared_ptr<IVideoRoomListener> listener)
+	{
+		removeBizObserver<IVideoRoomListener>(_listeners, listener);
+	}
+
 	void VideoRoom::onAttached(bool success)
 	{
 		if (success) {
@@ -48,14 +58,14 @@ namespace vi {
 			request.bitrate = 256000;
 
 			if (auto wreh = _pluginContext->webrtcService.lock()) {
-				std::shared_ptr<SendMessageHandler> handler = std::make_shared<vi::SendMessageHandler>();
+				std::shared_ptr<SendMessageEvent> event = std::make_shared<vi::SendMessageEvent>();
 				auto lambda = [](bool success, const std::string& message) {
 					qDebug() << "message: " << message.c_str();
 				};
-				std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
-				handler->message = x2struct::X::tojson(request);
-				handler->callback = callback;
-				sendMessage(handler);
+				std::shared_ptr<vi::EventCallback> callback = std::make_shared<vi::EventCallback>(lambda);
+				event->message = x2struct::X::tojson(request);
+				event->callback = callback;
+				sendMessage(event);
 			}
 		}
 		unmuteVideo();
@@ -133,18 +143,18 @@ namespace vi {
 			qDebug() << "Handling SDP as well...";
 			// TODO:
 			//sfutest.handleRemoteJsep({ jsep: jsep });
-			std::shared_ptr<PrepareWebRTCPeerHandler> handler = std::make_shared<PrepareWebRTCPeerHandler>();
+			std::shared_ptr<PrepareWebRTCPeerEvent> event = std::make_shared<PrepareWebRTCPeerEvent>();
 			auto lambda = [](bool success, const std::string& message) {
 				qDebug() << "message: " << message.c_str();
 			};
-			std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
+			std::shared_ptr<vi::EventCallback> callback = std::make_shared<vi::EventCallback>(lambda);
 			JsepConfig jst;
 			jst.type = jsep.type;
 			jst.sdp = jsep.sdp;
-			handler->jsep = jst;
-			handler->callback = callback;
+			event->jsep = jst;
+			event->callback = callback;
 
-			handleRemoteJsep(handler);
+			handleRemoteJsep(event);
 
 			if (!_pluginContext) {
 				return;
@@ -182,7 +192,7 @@ namespace vi {
 	void VideoRoom::publishOwnStream(bool audioOn)
 	{
 		auto wself = weak_from_this();
-		std::shared_ptr<PrepareWebRTCHandler> handler = std::make_shared<PrepareWebRTCHandler>();
+		std::shared_ptr<PrepareWebRTCEvent> event = std::make_shared<PrepareWebRTCEvent>();
 		auto callback = std::make_shared<CreateAnswerOfferCallback>([wself, audioOn](bool success, const std::string& reason, const JsepConfig& jsep) {
 			auto self = wself.lock();
 			if (!self) {
@@ -193,48 +203,48 @@ namespace vi {
 				request.audio = audioOn;
 				request.video = true;
 				if (auto wreh = self->pluginContext()->webrtcService.lock()) {
-					std::shared_ptr<SendMessageHandler> handler = std::make_shared<vi::SendMessageHandler>();
+					std::shared_ptr<SendMessageEvent> event = std::make_shared<vi::SendMessageEvent>();
 					auto lambda = [](bool success, const std::string& message) {
 						qDebug() << "publishOwnStream: " << message.c_str();
 					};
-					std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
-					handler->message = x2struct::X::tojson(request);
+					std::shared_ptr<vi::EventCallback> callback = std::make_shared<vi::EventCallback>(lambda);
+					event->message = x2struct::X::tojson(request);
 					Jsep jp;
 					jp.type = jsep.type;
 					jp.sdp = jsep.sdp;
-					handler->jsep = x2struct::X::tojson(jp);
-					handler->callback = callback;
-					self->sendMessage(handler);
+					event->jsep = x2struct::X::tojson(jp);
+					event->callback = callback;
+					self->sendMessage(event);
 				}
 			}
 			else {
 				qDebug() << "WebRTC error: " << reason.c_str();
 			}
 		});
-		handler->answerOfferCallback = callback;
+		event->answerOfferCallback = callback;
 		MediaConfig media;
 		media.audioRecv = false;
 		media.videoRecv = false;
 		media.audioSend = audioOn;
 		media.videoSend = true;
-		handler->media = media;
-		handler->simulcast = false;
-		handler->simulcast2 = false;
-		createOffer(handler);
+		event->media = media;
+		event->simulcast = false;
+		event->simulcast2 = false;
+		createOffer(event);
 	}
 
 	void VideoRoom::unpublishOwnStream()
 	{
 		UnpublishRequest request;
 		if (auto wreh = pluginContext()->webrtcService.lock()) {
-			std::shared_ptr<SendMessageHandler> handler = std::make_shared<vi::SendMessageHandler>();
+			std::shared_ptr<SendMessageEvent> event = std::make_shared<vi::SendMessageEvent>();
 			auto lambda = [](bool success, const std::string& message) {
 				qDebug() << "message: " << message.c_str();
 			};
-			std::shared_ptr<vi::HandlerCallback> callback = std::make_shared<vi::HandlerCallback>(lambda);
-			handler->message = x2struct::X::tojson(request);
-			handler->callback = callback;
-			sendMessage(handler);
+			std::shared_ptr<vi::EventCallback> callback = std::make_shared<vi::EventCallback>(lambda);
+			event->message = x2struct::X::tojson(request);
+			event->callback = callback;
+			sendMessage(event);
 		}
 	}
 

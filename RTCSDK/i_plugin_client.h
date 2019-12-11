@@ -1,6 +1,6 @@
 #pragma once
 
-#include "callback_handlers.h"
+#include "webrtc_service_events.h"
 
 namespace vi {
 	class IPluginClient
@@ -28,20 +28,20 @@ namespace vi {
 
 		virtual std::string getBitrate() = 0;
 
-		virtual void sendMessage(std::shared_ptr<SendMessageHandler> handler) = 0;
+		virtual void sendMessage(std::shared_ptr<SendMessageEvent> event) = 0;
 
-		virtual void sendData(std::shared_ptr<SendDataHandler> handler) = 0;
+		virtual void sendData(std::shared_ptr<SendDataEvent> event) = 0;
 
-		virtual void sendDtmf(std::shared_ptr<SendDtmfHandler> handler) = 0;
+		virtual void sendDtmf(std::shared_ptr<SendDtmfEvent> event) = 0;
 
-		virtual void createOffer(std::shared_ptr<PrepareWebRTCHandler> handler) = 0;
+		virtual void createOffer(std::shared_ptr<PrepareWebRTCEvent> event) = 0;
 
-		virtual void createAnswer(std::shared_ptr<PrepareWebRTCHandler> handler) = 0;
+		virtual void createAnswer(std::shared_ptr<PrepareWebRTCEvent> event) = 0;
 
-		virtual void handleRemoteJsep(std::shared_ptr<PrepareWebRTCPeerHandler> handler) = 0;
+		virtual void handleRemoteJsep(std::shared_ptr<PrepareWebRTCPeerEvent> event) = 0;
 
 		virtual void hangup(bool sendRequest) = 0;
 
-		virtual void detach(std::shared_ptr<DetachHandler> handler) = 0;
+		virtual void detach(std::shared_ptr<DetachEvent> event) = 0;
 	};
 }

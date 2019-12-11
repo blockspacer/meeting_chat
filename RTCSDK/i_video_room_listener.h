@@ -4,11 +4,14 @@
 #include <string>
 
 namespace vi {
+	class Participant;
 	class IVideoRoomListener {
 	public:
 		virtual ~IVideoRoomListener() {}
 
 	protected:
-		virtual void createParticipant(int64_t id, const std::string& displayName, const std::string& audio, const std::string& video) = 0;
+		virtual void onCreateParticipant(std::shared_ptr<Participant> participant) = 0;
+
+		virtual void onRemoveParticipant(std::shared_ptr<Participant> participant) = 0;
 	};
 }

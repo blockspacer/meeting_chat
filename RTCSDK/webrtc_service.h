@@ -8,7 +8,7 @@
 #include "api/peer_connection_interface.h"
 #include "i_sfu_client.h"
 #include "i_sfu_client_listener.h"
-#include "callback_handlers.h"
+#include "webrtc_service_events.h"
 #include "webrtc_service_interface.h"
 
 namespace vi {
@@ -39,7 +39,7 @@ namespace vi {
 
 		void attach(const std::string& plugin, const std::string& opaqueId, std::shared_ptr<IWebRTCEventHandler> wreh) override;
 
-		void destroy(std::shared_ptr<DestroySessionHandler> handler) override;
+		void destroy(std::shared_ptr<DestroySessionEvent> event) override;
 
 		void reconnect() override;
 
@@ -61,21 +61,21 @@ namespace vi {
 
 		std::string getBitrate(int64_t handleId) override;
 
-		void sendMessage(int64_t handleId, std::shared_ptr<SendMessageHandler> handler) override;
+		void sendMessage(int64_t handleId, std::shared_ptr<SendMessageEvent> event) override;
 
-		void sendData(int64_t handleId, std::shared_ptr<SendDataHandler> handler) override;
+		void sendData(int64_t handleId, std::shared_ptr<SendDataEvent> event) override;
 
-		void sendDtmf(int64_t handleId, std::shared_ptr<SendDtmfHandler> handler) override;
+		void sendDtmf(int64_t handleId, std::shared_ptr<SendDtmfEvent> event) override;
 
-		void createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler) override;
+		void createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event) override;
 
-		void createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler) override;
+		void createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event) override;
 
-		void handleRemoteJsep(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerHandler> handler) override;
+		void handleRemoteJsep(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerEvent> event) override;
 
 		void hangup(int64_t handleId, bool sendRequest) override;
 
-		void detach(int64_t handleId, std::shared_ptr<DetachHandler> handler) override;
+		void detach(int64_t handleId, std::shared_ptr<DetachEvent> event) override;
 
 	protected:
 		// ISFUClientListener
@@ -94,32 +94,32 @@ namespace vi {
 
 		bool mute(int64_t handleId, bool isVideo, bool mute);
 
-		void prepareWebrtc(int64_t handleId, bool isOffer, std::shared_ptr<PrepareWebRTCHandler> handler);
+		void prepareWebrtc(int64_t handleId, bool isOffer, std::shared_ptr<PrepareWebRTCEvent> event);
 
-		void prepareWebrtcPeer(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerHandler> handler);
+		void prepareWebrtcPeer(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerEvent> event);
 
 		void cleanupWebrtc(int64_t handleId, bool sendRequest = true);
 
-		void destroyHandle(int64_t handleId, std::shared_ptr<DetachHandler> handler);
+		void destroyHandle(int64_t handleId, std::shared_ptr<DetachEvent> event);
 
 	private:
-		void createSession(std::shared_ptr<CreateSessionHandler> handler);
+		void createSession(std::shared_ptr<CreateSessionEvent> event);
 
 		void startHeartbeat();
 
 		std::shared_ptr<IWebRTCEventHandler> getHandler(int64_t handleId);
 
-		void prepareStreams(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
+		void prepareStreams(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream);
 
-		void sendSDP(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler);
+		void sendSDP(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event);
 
 		void createDataChannel(int64_t handleId, const std::string& dcLabel, rtc::scoped_refptr<webrtc::DataChannelInterface> incoming);
 
-		void _createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler);
+		void _createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event);
 
-		void _createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler);
+		void _createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event);
 
-		void destroySession(std::shared_ptr<DestroySessionHandler> handler);
+		void destroySession(std::shared_ptr<DestroySessionEvent> event);
 
 		void configTracks(const MediaConfig& media, rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc);
 

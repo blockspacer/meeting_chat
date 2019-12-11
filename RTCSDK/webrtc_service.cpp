@@ -71,10 +71,10 @@ namespace vi {
 
 	void WebRTCService::cleanup()
 	{
-		auto handler = std::make_shared<DestroySessionHandler>();
+		auto handler = std::make_shared<DestroySessionEvent>();
 		handler->notifyDestroyed = true;
 		handler->cleanupHandles = true;
-		handler->callback = std::make_shared<HandlerCallback>([](bool success, const std::string& reason) {
+		handler->callback = std::make_shared<EventCallback>([](bool success, const std::string& reason) {
 			qDebug() << "destroy, success = " << success << ", reason = " << reason.c_str();
 		});
 		this->destroy(handler);
@@ -123,22 +123,22 @@ namespace vi {
 		_sfuClient->attach(_sessionId, plugin, opaqueId, callback);
 	}
 
-	void WebRTCService::destroy(std::shared_ptr<DestroySessionHandler> handler)
+	void WebRTCService::destroy(std::shared_ptr<DestroySessionEvent> event)
 	{
-		destroySession(handler);
+		destroySession(event);
 	}
 
 	void WebRTCService::reconnect()
 	{
 		// TODO: ?
-		std::shared_ptr<CreateSessionHandler> handler = std::make_shared<CreateSessionHandler>();
-		handler->reconnect = true;
+		std::shared_ptr<CreateSessionEvent> event = std::make_shared<CreateSessionEvent>();
+		event->reconnect = true;
 		auto lambda = [](bool success, const std::string& message) {
 			std::string text = message;
 
 		};
-		handler->callback = std::make_shared<vi::HandlerCallback>(lambda);
-		createSession(handler);
+		event->callback = std::make_shared<vi::EventCallback>(lambda);
+		createSession(event);
 	}
 
 	int32_t WebRTCService::getVolume(int64_t handleId, bool isRemote)
@@ -276,63 +276,63 @@ namespace vi {
 		return "";
 	}
 
-	void WebRTCService::sendMessage(int64_t handleId, std::shared_ptr<SendMessageHandler> handler)
+	void WebRTCService::sendMessage(int64_t handleId, std::shared_ptr<SendMessageEvent> event)
 	{
 		if (status() == ServiceStauts::UP) {
 			if (_wrehs.find(handleId) != _wrehs.end()) {
 				const auto& wreh = _wrehs[handleId];
 				auto wself = weak_from_this();
-				auto lambda = [wself, wreh, handler](std::shared_ptr<JanusResponse> model) {
+				auto lambda = [wself, wreh, event](std::shared_ptr<JanusResponse> model) {
 					std::cout << "model->janus = " << model->janus << std::endl;
 					if (auto self = wself.lock()) {
-						if (!handler || !handler->callback) {
+						if (!event || !event->callback) {
 							return;
 						}
 						if (model->janus == "success" || model->janus == "ack") {
 							if (model->xhas("plugindata")) {
 								//std::string data = model->plugindata.data;
 							}
-							const auto& cb = handler->callback;
+							const auto& cb = event->callback;
 							(*cb)(true, "success");
 						}
 						else if (model->janus != "ack") {
-							const auto& cb = handler->callback;
+							const auto& cb = event->callback;
 							(*cb)(false, "error");
 						}
 					}
 				};
 				std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
-				_sfuClient->sendMessage(_sessionId, handleId, handler->message, handler->jsep, callback);
+				_sfuClient->sendMessage(_sessionId, handleId, event->message, event->jsep, callback);
 			}
 		}
 		else {
-			if (handler && handler->callback) {
-				const auto& cb = handler->callback;
+			if (event && event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "service down!");
 			}
 		}
 	}
 
-	void WebRTCService::sendData(int64_t handleId, std::shared_ptr<SendDataHandler> handler) 
+	void WebRTCService::sendData(int64_t handleId, std::shared_ptr<SendDataEvent> event) 
 	{
-		if (!handler) {
+		if (!event) {
 			qDebug() << "handler == nullptr";
 			return;
 		}
 
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle";
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "Invalid handle");
 			}
 			return;
 		}
 
-		if (handler->label.empty() || handler->text.empty()) {
+		if (event->label.empty() || event->text.empty()) {
 			qDebug() << "handler->label.empty() || handler->text.empty()";
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "empty label or empty text");
 			}
 			return;
@@ -341,10 +341,10 @@ namespace vi {
 		const auto& wreh = _wrehs[handleId];
 		const auto& context = wreh->pluginContext()->webrtcContext;
 
-		if (context->dataChannels.find(handler->label) != context->dataChannels.end()) {
-			rtc::scoped_refptr<webrtc::DataChannelInterface> dc = context->dataChannels[handler->label];
+		if (context->dataChannels.find(event->label) != context->dataChannels.end()) {
+			rtc::scoped_refptr<webrtc::DataChannelInterface> dc = context->dataChannels[event->label];
 			if (dc->state() == webrtc::DataChannelInterface::DataState::kOpen) {
-				webrtc::DataBuffer buffer(handler->text);
+				webrtc::DataBuffer buffer(event->text);
 				dc->Send(buffer);
 			}
 			else {
@@ -353,25 +353,25 @@ namespace vi {
 		}
 		else {
 			qDebug() << "Create new data channel and wait for it to open";
-			this->createDataChannel(handleId, handler->label, nullptr);
+			this->createDataChannel(handleId, event->label, nullptr);
 		}
-		if (handler->callback) {
-			const auto& cb = handler->callback;
+		if (event->callback) {
+			const auto& cb = event->callback;
 			(*cb)(false, "success");
 		}
 	}
 
-	void WebRTCService::sendDtmf(int64_t handleId, std::shared_ptr<SendDtmfHandler> handler) 
+	void WebRTCService::sendDtmf(int64_t handleId, std::shared_ptr<SendDtmfEvent> event) 
 	{
-		if (!handler) {
+		if (!event) {
 			qDebug() << "handler == nullptr";
 			return;
 		}
 
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle";
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "Invalid handle");
 			}
 			return;
@@ -391,8 +391,8 @@ namespace vi {
 				}
 				if (audioSender) {
 					qDebug() << "Invalid DTMF configuration (no audio track)";
-					if (handler->callback) {
-						const auto& cb = handler->callback;
+					if (event->callback) {
+						const auto& cb = event->callback;
 						(*cb)(false, "Invalid DTMF configuration (no audio track)");
 					}
 					return;
@@ -415,49 +415,49 @@ namespace vi {
 			}
 		}
 
-		if (handler->tones.empty()) {
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+		if (event->tones.empty()) {
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "Invalid DTMF parameters");
 			}
 			return;
 		}
 
 		// We choose 500ms as the default duration for a tone
-		int duration = handler->duration > 0 ? handler->duration : 500;
+		int duration = event->duration > 0 ? event->duration : 500;
 
 		// We choose 50ms as the default gap between tones
-		int gap = handler->interToneGap > 0 ? handler->interToneGap : 50;
+		int gap = event->interToneGap > 0 ? event->interToneGap : 50;
 
-		qDebug() << "Sending DTMF string " << handler->tones.c_str() << " (duration " << duration << "ms, gap " << gap << "ms)";
-		context->dtmfSender->InsertDtmf(handler->tones, duration, gap);
+		qDebug() << "Sending DTMF string " << event->tones.c_str() << " (duration " << duration << "ms, gap " << gap << "ms)";
+		context->dtmfSender->InsertDtmf(event->tones, duration, gap);
 
-		if (handler->callback) {
-			const auto& cb = handler->callback;
+		if (event->callback) {
+			const auto& cb = event->callback;
 			(*cb)(false, "success");
 		}
 	}
 
-	void WebRTCService::prepareWebrtc(int64_t handleId, bool isOffer, std::shared_ptr<PrepareWebRTCHandler> handler)
+	void WebRTCService::prepareWebrtc(int64_t handleId, bool isOffer, std::shared_ptr<PrepareWebRTCEvent> event)
 	{
-		if (!handler) {
+		if (!event) {
 			qDebug() << "handler == nullptr";
 			return;
 		}
 
-		if (isOffer && handler->jsep) {
+		if (isOffer && event->jsep) {
 			qDebug() << "Provided a JSEP to a createOffer";
 			return;
 		}
-		else if (!isOffer && (!handler->jsep.has_value() || handler->jsep.value().type.empty() || (handler->jsep.value().sdp.empty()))) {
+		else if (!isOffer && (!event->jsep.has_value() || event->jsep.value().type.empty() || (event->jsep.value().sdp.empty()))) {
 			qDebug() << "A valid JSEP is required for createAnswer";
 			return;
 		}
 			
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle";
-				if (handler->callback) {
-					const auto& cb = handler->callback;
+				if (event->callback) {
+					const auto& cb = event->callback;
 					(*cb)(false, "Invalid handle");
 				}
 			return;
@@ -465,11 +465,11 @@ namespace vi {
 
 		const auto& wreh = _wrehs[handleId];
 		const auto& context = wreh->pluginContext()->webrtcContext;
-		context->trickle = HelperUtils::isTrickleEnabled(handler->trickle);
-		if (!handler->media.has_value()) {
+		context->trickle = HelperUtils::isTrickleEnabled(event->trickle);
+		if (!event->media.has_value()) {
 			return;
 		}
-		auto& media = handler->media.value();
+		auto& media = event->media.value();
 		if (!context->pc) {
 			media.update = false;
 			media.keepAudio = false;
@@ -480,9 +480,9 @@ namespace vi {
 			media.update = true;
 			// Check if there's anything to add/remove/replace, or if we
 			// can go directly to preparing the new SDP offer or answer
-			if (handler->stream) {
+			if (event->stream) {
 				// External stream: is this the same as the one we were using before?
-				if (handler->stream != context->myStream) {
+				if (event->stream != context->myStream) {
 					qDebug() << "Renegotiation involves a new external stream";
 				}
 			}
@@ -495,8 +495,8 @@ namespace vi {
 					media.audioSend = true;
 					if (context->myStream && context->myStream->GetAudioTracks().size() > 0) {
 						qDebug() << "Can't add audio stream, there already is one";
-						if (handler->callback) {
-							const auto& cb = handler->callback;
+						if (event->callback) {
+							const auto& cb = event->callback;
 							(*cb)(false, "Can't add audio stream, there already is one");
 						}
 						return;
@@ -557,8 +557,8 @@ namespace vi {
 					media.videoSend = true;
 					if (context->myStream && context->myStream->GetVideoTracks().size() > 0) {
 						qDebug() << "Can't add video stream, there already is one";
-						if (handler->callback) {
-							const auto& cb = handler->callback;
+						if (event->callback) {
+							const auto& cb = event->callback;
 							(*cb)(false, "Can't add video stream, there already is one");
 						}
 						return;
@@ -621,7 +621,7 @@ namespace vi {
 				// TODO:
 				//pluginHandle.consentDialog(false);
 				//streamsDone(handleId, jsep, media, callbacks, config.myStream);
-				prepareStreams(handleId, handler, context->myStream);
+				prepareStreams(handleId, event, context->myStream);
 				return;
 			}
 		}
@@ -683,8 +683,8 @@ namespace vi {
 			}
 		}
 		// Was a MediaStream object passed, or do we need to take care of that?
-		if (handler->stream) {
-			const auto& stream = handler->stream;
+		if (event->stream) {
+			const auto& stream = event->stream;
 			qDebug() << "MediaStream provided by the application";
 
 			// If this is an update, let's check if we need to release the previous stream
@@ -712,7 +712,7 @@ namespace vi {
 			context->streamExternal = true;
 			//pluginHandle.consentDialog(false);
 			//streamsDone(handleId, jsep, media, callbacks, stream);
-			prepareStreams(handleId, handler, stream);
+			prepareStreams(handleId, event, stream);
 			return;
 		}
 		if (HelperUtils::isAudioSendEnabled(media) || HelperUtils::isVideoSendEnabled(media)) {
@@ -736,35 +736,35 @@ namespace vi {
 			}
 
 			//context->pc->AddStream(mstream);
-			prepareStreams(handleId, handler, mstream);
+			prepareStreams(handleId, event, mstream);
 		}
 		else {
 			//streamsDone(handleId, jsep, media, callbacks, stream);
-			prepareStreams(handleId, handler, nullptr);
+			prepareStreams(handleId, event, nullptr);
 		}
 	}
 
-	void WebRTCService::createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler)
+	void WebRTCService::createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event)
 	{
-		prepareWebrtc(handleId, true, handler);
+		prepareWebrtc(handleId, true, event);
 	}
 
-	void WebRTCService::createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler)
+	void WebRTCService::createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event)
 	{
-		prepareWebrtc(handleId, false, handler);
+		prepareWebrtc(handleId, false, event);
 	}
 
-	void WebRTCService::prepareWebrtcPeer(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerHandler> handler)
+	void WebRTCService::prepareWebrtcPeer(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerEvent> event)
 	{
-		if (!handler) {
+		if (!event) {
 			qDebug() << "handler == nullptr";
 			return;
 		}
 
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle";
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "Invalid handle");
 			}
 			return;
@@ -773,41 +773,41 @@ namespace vi {
 		const auto& wreh = _wrehs[handleId];
 		const auto& context = wreh->pluginContext()->webrtcContext;
 
-		if (handler->jsep.has_value()) {
+		if (event->jsep.has_value()) {
 			if (!context->pc) {
 				qDebug() << "No PeerConnection: if this is an answer, use createAnswer and not handleRemoteJsep";
-				if (handler->callback) {
-					const auto& cb = handler->callback;
+				if (event->callback) {
+					const auto& cb = event->callback;
 					(*cb)(false, "No PeerConnection: if this is an answer, use createAnswer and not handleRemoteJsep");
 				}
 				return;
 			}
-			absl::optional<webrtc::SdpType> type = webrtc::SdpTypeFromString(handler->jsep->type);
+			absl::optional<webrtc::SdpType> type = webrtc::SdpTypeFromString(event->jsep->type);
 			if (!type) {
 				qDebug() << "Invalid JSEP type";
 				return;
 			} 
 			webrtc::SdpParseError spError;
 			std::unique_ptr<webrtc::SessionDescriptionInterface> desc = webrtc::CreateSessionDescription(type.value(),
-				handler->jsep->sdp, &spError);
+				event->jsep->sdp, &spError);
 			qDebug() << "spError: description: " << spError.description.c_str() << ", line: " << spError.line.c_str();
 			SetSessionDescObserver* ssdo(new rtc::RefCountedObject<SetSessionDescObserver>());
-			ssdo->setSuccessCallback(std::make_shared<SetSessionDescSuccessCallback>([context, handler]() {
-				context->remoteSdp = { handler->jsep->type, handler->jsep->sdp, false };
+			ssdo->setSuccessCallback(std::make_shared<SetSessionDescSuccessCallback>([context, event]() {
+				context->remoteSdp = { event->jsep->type, event->jsep->sdp, false };
 
 				for (const auto& candidate : context->candidates) {
 					context->pc->AddIceCandidate(candidate.get());
 				}
 				context->candidates.clear();
-				if (handler->callback) {
-					const auto& cb = handler->callback;
+				if (event->callback) {
+					const auto& cb = event->callback;
 					(*cb)(true, "success");
 				}
 			}));
-			ssdo->setFailureCallback(std::make_shared<SetSessionDescFailureCallback>([handler](const std::string& error) {
+			ssdo->setFailureCallback(std::make_shared<SetSessionDescFailureCallback>([event](const std::string& error) {
 				qDebug() << "SetRemoteDescription() failure: " << error.c_str();
-				if (handler->callback) {
-					const auto& cb = handler->callback;
+				if (event->callback) {
+					const auto& cb = event->callback;
 					(*cb)(false, "failure");
 				}
 			}));
@@ -815,16 +815,16 @@ namespace vi {
 		}
 		else {
 			qDebug() << "Invalid JSEP";
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "Invalid JSEP");
 			}
 		}
 	}
 
-	void WebRTCService::handleRemoteJsep(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerHandler> handler) 
+	void WebRTCService::handleRemoteJsep(int64_t handleId, std::shared_ptr<PrepareWebRTCPeerEvent> event) 
 	{
-		prepareWebrtcPeer(handleId, handler);
+		prepareWebrtcPeer(handleId, event);
 	}
 
 	void WebRTCService::cleanupWebrtc(int64_t handleId, bool sendRequest)
@@ -890,24 +890,24 @@ namespace vi {
 		cleanupWebrtc(handleId, sendRequest);
 	}
 
-	void WebRTCService::destroyHandle(int64_t handleId, std::shared_ptr<DetachHandler> handler) 
+	void WebRTCService::destroyHandle(int64_t handleId, std::shared_ptr<DetachEvent> event) 
 	{
 		cleanupWebrtc(handleId);
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle";
-			if (handler && handler->callback) {
-				const auto& cb = handler->callback;
+			if (event && event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(true, "");
 			}
 			return;
 		}
-		if (!handler) {
+		if (!event) {
 			return;
 		}
-		if (handler->noRequest) {
+		if (event->noRequest) {
 			// We're only removing the handle locally
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(true, "");
 			}
 			return;
@@ -928,22 +928,22 @@ namespace vi {
 		_sfuClient->detach(_sessionId, handleId, callback);
 	}
 
-	void WebRTCService::detach(int64_t handleId, std::shared_ptr<DetachHandler> handler) 
+	void WebRTCService::detach(int64_t handleId, std::shared_ptr<DetachEvent> event) 
 	{
-		destroyHandle(handleId, handler);
+		destroyHandle(handleId, event);
 	}
 
 	// ISFUClientListener
 	void WebRTCService::onOpened()
 	{
-		std::shared_ptr<CreateSessionHandler> handler = std::make_shared<CreateSessionHandler>();
-		handler->reconnect = false;
+		std::shared_ptr<CreateSessionEvent> event = std::make_shared<CreateSessionEvent>();
+		event->reconnect = false;
 		auto lambda = [](bool success, const std::string& message) {
 			std::string text = message;
 
 		};
-		handler->callback = std::make_shared<vi::HandlerCallback>(lambda);
-		createSession(handler);
+		event->callback = std::make_shared<vi::EventCallback>(lambda);
+		createSession(event);
 	}
 
 	void WebRTCService::onClosed()
@@ -1111,10 +1111,10 @@ namespace vi {
 		}
 	}
 
-	void WebRTCService::createSession(std::shared_ptr<CreateSessionHandler> handler)
+	void WebRTCService::createSession(std::shared_ptr<CreateSessionEvent> event)
 	{
 		auto wself = std::weak_ptr<WebRTCService>(shared_from_this());
-		auto lambda = [wself, handler](std::shared_ptr<JanusResponse> model) {
+		auto lambda = [wself, event](std::shared_ptr<JanusResponse> model) {
 			std::cout << "model->janus = " << model->janus << std::endl;
 			if (auto self = wself.lock()) {
 				self->_sessionId = model->session_id > 0 ? model->session_id : model->data.id;
@@ -1124,14 +1124,14 @@ namespace vi {
 				self->notifyObserver4Change<IWebRTCServiceListener>(self->_listeners, [](const std::shared_ptr<IWebRTCServiceListener>& listener) {
 					listener->onStatus(ServiceStauts::UP);
 				});
-				if (handler && handler->callback) {
-					const auto& cb = handler->callback;
+				if (event && event->callback) {
+					const auto& cb = event->callback;
 					(*cb)(true, "");
 				}
 			}
 		};
 		std::shared_ptr<JCCallback> callback = std::make_shared<JCCallback>(lambda);
-		if (handler && handler->reconnect) {
+		if (event && event->reconnect) {
 			_sfuClient->reconnectSession(_sessionId, callback);
 		}
 		else {
@@ -1168,13 +1168,13 @@ namespace vi {
 	}
 
 	void WebRTCService::prepareStreams(int64_t handleId,
-		std::shared_ptr<PrepareWebRTCHandler> handler,
+		std::shared_ptr<PrepareWebRTCEvent> event,
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
 	{
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle";
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "Invalid handle");
 			}
 			return;
@@ -1189,13 +1189,13 @@ namespace vi {
 		}
 
 		bool addTracks = false;
-		if (!context->myStream || !handler->media->update || context->streamExternal) {
+		if (!context->myStream || !event->media->update || context->streamExternal) {
 			context->myStream = stream;
 			addTracks = true;
 		}
 		else {
-			if ((!handler->media->update && HelperUtils::isAudioSendEnabled(handler->media)) ||
-				(handler->media->update && (handler->media->addAudio || handler->media->replaceAudio)) ||
+			if ((!event->media->update && HelperUtils::isAudioSendEnabled(event->media)) ||
+				(event->media->update && (event->media->addAudio || event->media->replaceAudio)) ||
 				stream->GetAudioTracks().size() > 0) {
 				if (_unifiedPlan) {
 					// Use Transceivers
@@ -1221,8 +1221,8 @@ namespace vi {
 					context->pc->AddTrack(stream->GetAudioTracks()[0], { stream->id() });
 				}
 			}
-			if ((!handler->media->update && HelperUtils::isVideoSendEnabled(handler->media)) ||
-				(handler->media->update && (handler->media->addVideo || handler->media->replaceVideo)) ||
+			if ((!event->media->update && HelperUtils::isVideoSendEnabled(event->media)) ||
+				(event->media->update && (event->media->addVideo || event->media->replaceVideo)) ||
 				stream->GetVideoTracks().size() > 0) {
 				if (_unifiedPlan) {
 					// Use Transceivers
@@ -1282,7 +1282,7 @@ namespace vi {
 			});
 			context->pcObserver->setIceGatheringChangeCallback(igccb);
 
-			auto iccb = std::make_shared<IceCandidateCallback>([wwreh, wself, handler](const webrtc::IceCandidateInterface* candidate) {
+			auto iccb = std::make_shared<IceCandidateCallback>([wwreh, wself, event](const webrtc::IceCandidateInterface* candidate) {
 				auto self = wself.lock();
 				auto wreh = wwreh.lock();
 				if (!self || !wreh) {
@@ -1299,12 +1299,12 @@ namespace vi {
 					self->_sfuClient->sendTrickleCandidate(self->_sessionId, handleId, data, nullptr);
 				}
 				else {
-					self->sendSDP(handleId, handler);
+					self->sendSDP(handleId, event);
 				}
 			});
 			context->pcObserver->setIceCandidateCallback(iccb);
 
-			auto tcb = std::make_shared<TrackCallback>([wwreh, wself, handler](rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver) {
+			auto tcb = std::make_shared<TrackCallback>([wwreh, wself, event](rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver) {
 				auto self = wself.lock();
 				auto wreh = wwreh.lock();
 				if (!self || !wreh) {
@@ -1356,7 +1356,7 @@ namespace vi {
 			//}
 
 			if (addTracks && stream) {
-				bool simulcast2 = handler->simulcast2.value_or(false);
+				bool simulcast2 = event->simulcast2.value_or(false);
 				for (auto track : stream->GetAudioTracks()) {
 					std::string id = stream->id();
 					webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>> result = context->pc->AddTrack(track, { stream->id() });
@@ -1403,8 +1403,8 @@ namespace vi {
 				}
 			}
 
-			if (handler->media
-				&& HelperUtils::isDataEnabled(handler->media.value())
+			if (event->media
+				&& HelperUtils::isDataEnabled(event->media.value())
 				&& context->dataChannels.find("JanusDataChannel") == context->dataChannels.end()) {
 				auto dccb = std::make_shared<DataChannelCallback>([wself = weak_from_this(), handleId](rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel) {
 					qDebug() << "Data channel created by Janus.";
@@ -1419,37 +1419,37 @@ namespace vi {
 				wreh->onLocalStream(context->myStream);
 			}
 
-			if (handler->jsep == absl::nullopt) {
+			if (event->jsep == absl::nullopt) {
 				// TODO:
-				_createOffer(handleId, handler);
+				_createOffer(handleId, event);
 			}
 			else {
-				absl::optional<webrtc::SdpType> type = webrtc::SdpTypeFromString(handler->jsep->type);
+				absl::optional<webrtc::SdpType> type = webrtc::SdpTypeFromString(event->jsep->type);
 				if (!type) {
 					qDebug() << "Invalid JSEP type";
 					return;
 				}
 				webrtc::SdpParseError spError;
 				std::unique_ptr<webrtc::SessionDescriptionInterface> desc = webrtc::CreateSessionDescription(type.value(),
-					handler->jsep->sdp, &spError);
+					event->jsep->sdp, &spError);
 				qDebug() << "spError: description: " << spError.description.c_str() << ", line: " << spError.line.c_str();
 				SetSessionDescObserver* ssdo(new rtc::RefCountedObject<SetSessionDescObserver>());
 				auto wself = weak_from_this();
-				ssdo->setSuccessCallback(std::make_shared<SetSessionDescSuccessCallback>([wself, context, handleId, handler]() {
-					context->remoteSdp = { handler->jsep->type, handler->jsep->sdp, false };
+				ssdo->setSuccessCallback(std::make_shared<SetSessionDescSuccessCallback>([wself, context, handleId, event]() {
+					context->remoteSdp = { event->jsep->type, event->jsep->sdp, false };
 
 					for (const auto& candidate : context->candidates) {
 						context->pc->AddIceCandidate(candidate.get());
 					}
 					context->candidates.clear();
 					if (auto self = wself.lock()) {
-						self->_createAnswer(handleId, handler);
+						self->_createAnswer(handleId, event);
 					}
 				}));
-				ssdo->setFailureCallback(std::make_shared<SetSessionDescFailureCallback>([handler](const std::string& error) {
+				ssdo->setFailureCallback(std::make_shared<SetSessionDescFailureCallback>([event](const std::string& error) {
 					qDebug() << "SetRemoteDescription() failure: " << error.c_str();
-					if (handler->callback) {
-						const auto& cb = handler->callback;
+					if (event->callback) {
+						const auto& cb = event->callback;
 						(*cb)(false, "failure");
 					}
 				}));
@@ -1458,7 +1458,7 @@ namespace vi {
 		}
 	}
 
-	void WebRTCService::sendSDP(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler)
+	void WebRTCService::sendSDP(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event)
 	{
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle, not sending anything";
@@ -1472,8 +1472,8 @@ namespace vi {
 			ld->ToString(&sdp);
 			context->mySdp = { ld->type(), sdp, context->trickle.value_or(false) };
 			context->sdpSent = true;
-			if (handler->answerOfferCallback) {
-				const auto& cb = handler->answerOfferCallback;
+			if (event->answerOfferCallback) {
+				const auto& cb = event->answerOfferCallback;
 				(*cb)(true, "", context->mySdp.value());
 			}
 		}
@@ -1638,7 +1638,7 @@ namespace vi {
 		}
 	}
 
-	void WebRTCService::_createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler)
+	void WebRTCService::_createOffer(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event)
 	{
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle";
@@ -1648,7 +1648,7 @@ namespace vi {
 		const auto& wreh = _wrehs[handleId];
 		const auto& context = wreh->pluginContext()->webrtcContext;
 
-		auto& media = handler->media.value();
+		auto& media = event->media.value();
 
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
@@ -1660,10 +1660,10 @@ namespace vi {
 			options.offer_to_receive_video = HelperUtils::isVideoRecvEnabled(media);
 		}
 
-		options.ice_restart = handler->iceRestart.value_or(false);
+		options.ice_restart = event->iceRestart.value_or(false);
 
 		bool sendVideo = HelperUtils::isVideoSendEnabled(media);
-		bool simulcast = handler->simulcast.value_or(false);
+		bool simulcast = event->simulcast.value_or(false);
 
 		if (sendVideo && simulcast) {
 			std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> senders = context->pc->GetSenders();
@@ -1702,20 +1702,20 @@ namespace vi {
 		std::unique_ptr<CreateSessionDescObserver> createOfferObserver;
 		createOfferObserver.reset(new rtc::RefCountedObject<CreateSessionDescObserver>());
 
-		std::shared_ptr<CreateSessionDescSuccessCallback> success = std::make_shared<CreateSessionDescSuccessCallback>([handler, context, options](webrtc::SessionDescriptionInterface* desc) {
+		std::shared_ptr<CreateSessionDescSuccessCallback> success = std::make_shared<CreateSessionDescSuccessCallback>([event, context, options](webrtc::SessionDescriptionInterface* desc) {
 			if (!desc) {
 				qDebug() << "Invalid description.";
 				return;
 			}
 
 			SetSessionDescObserver* ssdo(new rtc::RefCountedObject<SetSessionDescObserver>());
-			ssdo->setSuccessCallback(std::make_shared<SetSessionDescSuccessCallback>([context, handler]() {
+			ssdo->setSuccessCallback(std::make_shared<SetSessionDescSuccessCallback>([context, event]() {
 				qDebug() << "Set session description success.";
 			}));
-			ssdo->setFailureCallback(std::make_shared<SetSessionDescFailureCallback>([handler](const std::string& error) {
+			ssdo->setFailureCallback(std::make_shared<SetSessionDescFailureCallback>([event](const std::string& error) {
 				qDebug() << "SetRemoteDescription() failure: " << error.c_str();
-				if (handler->callback) {
-					const auto& cb = handler->callback;
+				if (event->callback) {
+					const auto& cb = event->callback;
 					(*cb)(false, "failure");
 				}
 			}));
@@ -1730,15 +1730,15 @@ namespace vi {
 			std::string sdp;
 			desc->ToString(&sdp);
 			JsepConfig jsep{ desc->type(), sdp, false };
-			if (handler->answerOfferCallback) {
-				const auto& cb = handler->answerOfferCallback;
+			if (event->answerOfferCallback) {
+				const auto& cb = event->answerOfferCallback;
 				(*cb)(true, "", jsep);
 			}
 		});
 
-		std::shared_ptr<CreateSessionDescFailureCallback> failure = std::make_shared<CreateSessionDescFailureCallback>([handler](const std::string& error) {
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+		std::shared_ptr<CreateSessionDescFailureCallback> failure = std::make_shared<CreateSessionDescFailureCallback>([event](const std::string& error) {
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "failure");
 			}
 		});
@@ -1749,7 +1749,7 @@ namespace vi {
 		context->pc->CreateOffer(createOfferObserver.release(), options);
 	}
 
-	void WebRTCService::_createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCHandler> handler)
+	void WebRTCService::_createAnswer(int64_t handleId, std::shared_ptr<PrepareWebRTCEvent> event)
 	{
 		if (_wrehs.find(handleId) == _wrehs.end()) {
 			qDebug() << "Invalid handle";
@@ -1759,7 +1759,7 @@ namespace vi {
 		const auto& wreh = _wrehs[handleId];
 		const auto& context = wreh->pluginContext()->webrtcContext;
 
-		auto& media = handler->media.value();
+		auto& media = event->media.value();
 
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
 
@@ -1773,10 +1773,10 @@ namespace vi {
 
 		options.offer_to_receive_audio = HelperUtils::isAudioRecvEnabled(media);
 		options.offer_to_receive_video = HelperUtils::isVideoRecvEnabled(media);
-		options.ice_restart = handler->iceRestart.value_or(false);
+		options.ice_restart = event->iceRestart.value_or(false);
 
 		bool sendVideo = HelperUtils::isVideoSendEnabled(media);
-		bool simulcast = handler->simulcast.value_or(false);
+		bool simulcast = event->simulcast.value_or(false);
 
 		if (sendVideo && simulcast) {
 			qDebug() << "Enabling Simulcasting for Firefox (RID)";
@@ -1812,19 +1812,19 @@ namespace vi {
 		std::unique_ptr<CreateSessionDescObserver> createAnswerObserver;
 		createAnswerObserver.reset(new rtc::RefCountedObject<CreateSessionDescObserver>());
 
-		std::shared_ptr<CreateSessionDescSuccessCallback> success = std::make_shared<CreateSessionDescSuccessCallback>([handler, context, options](webrtc::SessionDescriptionInterface* desc) {
+		std::shared_ptr<CreateSessionDescSuccessCallback> success = std::make_shared<CreateSessionDescSuccessCallback>([event, context, options](webrtc::SessionDescriptionInterface* desc) {
 			if (!desc) {
 				qDebug() << "Invalid description.";
 				return;
 			}
 			SetSessionDescObserver* ssdo(new rtc::RefCountedObject<SetSessionDescObserver>());
-			ssdo->setSuccessCallback(std::make_shared<SetSessionDescSuccessCallback>([context, handler]() {
+			ssdo->setSuccessCallback(std::make_shared<SetSessionDescSuccessCallback>([context, event]() {
 				qDebug() << "Set session description success.";
 			}));
-			ssdo->setFailureCallback(std::make_shared<SetSessionDescFailureCallback>([handler](const std::string& error) {
+			ssdo->setFailureCallback(std::make_shared<SetSessionDescFailureCallback>([event](const std::string& error) {
 				qDebug() << "SetRemoteDescription() failure: " << error.c_str();
-				if (handler->callback) {
-					const auto& cb = handler->callback;
+				if (event->callback) {
+					const auto& cb = event->callback;
 					(*cb)(false, "failure");
 				}
 			}));
@@ -1839,15 +1839,15 @@ namespace vi {
 			std::string sdp;
 			desc->ToString(&sdp);
 			JsepConfig jsep{ desc->type(), sdp, false };
-			if (handler->answerOfferCallback) {
-				const auto& cb = handler->answerOfferCallback;
+			if (event->answerOfferCallback) {
+				const auto& cb = event->answerOfferCallback;
 				(*cb)(true, "", jsep);
 			}
 		});
 
-		std::shared_ptr<CreateSessionDescFailureCallback> failure = std::make_shared<CreateSessionDescFailureCallback>([handler](const std::string& error) {
-			if (handler->callback) {
-				const auto& cb = handler->callback;
+		std::shared_ptr<CreateSessionDescFailureCallback> failure = std::make_shared<CreateSessionDescFailureCallback>([event](const std::string& error) {
+			if (event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(false, "failure");
 			}
 		});
@@ -1858,33 +1858,33 @@ namespace vi {
 		context->pc->CreateAnswer(createAnswerObserver.release(), options);
 	}
 
-	void WebRTCService::destroySession(std::shared_ptr<DestroySessionHandler> handler)
+	void WebRTCService::destroySession(std::shared_ptr<DestroySessionEvent> event)
 	{
 		qDebug() << "Destroying session: " << _sessionId;
 		if (_sessionId == -1) {
 			qDebug() << "No session to destroy";
-			if (handler && handler->callback) {
-				const auto& cb = handler->callback;
+			if (event && event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(true, "");
 			}
-			if (handler->notifyDestroyed) {
+			if (event->notifyDestroyed) {
 				// TODO:
 				//gatewayCallbacks.destroyed();
 			}
 			return;
 		}
-		if (!handler) {
+		if (!event) {
 			return;
 		}
-		if (handler->cleanupHandles) {
+		if (event->cleanupHandles) {
 			for (auto pair : _wrehs) {
-				std::shared_ptr<DetachHandler> dh = std::make_shared<DetachHandler>();
+				std::shared_ptr<DetachEvent> dh = std::make_shared<DetachEvent>();
 				dh->noRequest = true;
 				int64_t hId = pair.first;
 				auto lambda = [hId](bool success, const std::string& message) {
 					qDebug() << "destroyHandle, handleId = " << hId << ", success = " << success << ", message = " << message.c_str();
 				};
-				dh->callback = std::make_shared<vi::HandlerCallback>(lambda);
+				dh->callback = std::make_shared<vi::EventCallback>(lambda);
 				destroyHandle(hId, dh);
 			}
 			//_sfuClient->removeListener(shared_from_this());
@@ -1892,8 +1892,8 @@ namespace vi {
 		}
 		if (!_connected) {
 			qDebug() << "Is the server down? (connected=false)";
-			if(handler->callback) {
-				const auto& cb = handler->callback;
+			if(event->callback) {
+				const auto& cb = event->callback;
 				(*cb)(true, "");
 			}
 			return;

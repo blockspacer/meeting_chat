@@ -7,29 +7,35 @@
 #include "absl/types/optional.h"
 
 namespace vi {
-	using HandlerCallback = std::function<void(bool success, const std::string& reason)>;
+	using SuccessCallback = std::function<void()>;
+	using FailureCallback = std::function<void(const std::string& reason)>;
+	using EventCallback = std::function<void(bool success, const std::string& reason)>;
 	class IWebRTCEventHandler;
 
-	class SendMessageHandler {
+	class EventBase {
+	public:
+		virtual ~EventBase() {}
+		std::string name;
+		std::shared_ptr<EventCallback> callback;
+	};
+
+	class SendMessageEvent : public EventBase {
 	public:
 		std::string message;
 		std::string jsep;
-		std::shared_ptr<HandlerCallback> callback;
 	};
 
-	class SendDataHandler {
+	class SendDataEvent : public EventBase {
 	public:
 		std::string text;
 		std::string label;
-		std::shared_ptr<HandlerCallback> callback;
 	};
 
-	class SendDtmfHandler {
+	class SendDtmfEvent : public EventBase {
 	public:
 		std::string tones;
 		int duration;
 		int interToneGap;
-		std::shared_ptr<HandlerCallback> callback;
 	};
 
 	struct MediaConfig {
@@ -70,7 +76,7 @@ namespace vi {
 
 	using CreateAnswerOfferCallback = std::function<void(bool success, const std::string& reason, const JsepConfig& jsep)>;
 
-	class PrepareWebRTCHandler {
+	class PrepareWebRTCEvent : public EventBase {
 	public:
 		absl::optional<JsepConfig> jsep;
 		absl::optional<MediaConfig> media;
@@ -79,33 +85,28 @@ namespace vi {
 		absl::optional<bool> simulcast2;
 		absl::optional<bool> iceRestart;
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> stream;
-		std::shared_ptr<HandlerCallback> callback;
 		std::shared_ptr<CreateAnswerOfferCallback> answerOfferCallback;
 	};
 
-	class PrepareWebRTCPeerHandler {
+	class PrepareWebRTCPeerEvent : public EventBase {
 	public:
 		absl::optional<JsepConfig> jsep;
-		std::shared_ptr<HandlerCallback> callback;
 	};
 
-	class DetachHandler {
+	class DetachEvent : public EventBase {
 	public:
 		bool noRequest;
 		std::string jsep;
-		std::shared_ptr<HandlerCallback> callback;
 	};
 
-	class CreateSessionHandler {
+	class CreateSessionEvent : public EventBase {
 	public:
 		bool reconnect;
-		std::shared_ptr<HandlerCallback> callback;
 	};
 
-	class DestroySessionHandler {
+	class DestroySessionEvent : public EventBase {
 	public:
 		bool notifyDestroyed;
 		bool cleanupHandles;
-		std::shared_ptr<HandlerCallback> callback;
 	};
 }

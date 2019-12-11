@@ -119,56 +119,56 @@ namespace vi {
 		return false;
 	}
 
-	void PluginClient::sendMessage(std::shared_ptr<SendMessageHandler> handler)
+	void PluginClient::sendMessage(std::shared_ptr<SendMessageEvent> event)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				wrs->sendMessage(_pluginContext->handleId, handler);
+				wrs->sendMessage(_pluginContext->handleId, event);
 			}
 		}
 	}
 
-	void PluginClient::sendData(std::shared_ptr<SendDataHandler> handler)
+	void PluginClient::sendData(std::shared_ptr<SendDataEvent> event)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				wrs->sendData(_pluginContext->handleId, handler);
+				wrs->sendData(_pluginContext->handleId, event);
 			}
 		}
 	}
 
-	void PluginClient::sendDtmf(std::shared_ptr<SendDtmfHandler> handler)
+	void PluginClient::sendDtmf(std::shared_ptr<SendDtmfEvent> event)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				wrs->sendDtmf(_pluginContext->handleId, handler);
+				wrs->sendDtmf(_pluginContext->handleId, event);
 			}
 		}
 	}
 
-	void PluginClient::createOffer(std::shared_ptr<PrepareWebRTCHandler> handler)
+	void PluginClient::createOffer(std::shared_ptr<PrepareWebRTCEvent> event)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				wrs->createOffer(_pluginContext->handleId, handler);
+				wrs->createOffer(_pluginContext->handleId, event);
 			}
 		}
 	}
 
-	void PluginClient::createAnswer(std::shared_ptr<PrepareWebRTCHandler> handler)
+	void PluginClient::createAnswer(std::shared_ptr<PrepareWebRTCEvent> event)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				wrs->createAnswer(_pluginContext->handleId, handler);
+				wrs->createAnswer(_pluginContext->handleId, event);
 			}
 		}
 	}
 
-	void PluginClient::handleRemoteJsep(std::shared_ptr<PrepareWebRTCPeerHandler> handler)
+	void PluginClient::handleRemoteJsep(std::shared_ptr<PrepareWebRTCPeerEvent> event)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				wrs->handleRemoteJsep(_pluginContext->handleId, handler);
+				wrs->handleRemoteJsep(_pluginContext->handleId, event);
 			}
 		}
 	}
@@ -182,11 +182,11 @@ namespace vi {
 		}
 	}
 
-	void PluginClient::detach(std::shared_ptr<DetachHandler> handler)
+	void PluginClient::detach(std::shared_ptr<DetachEvent> event)
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				wrs->detach(_pluginContext->handleId, handler);
+				wrs->detach(_pluginContext->handleId, event);
 			}
 		}
 	}

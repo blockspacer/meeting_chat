@@ -13,6 +13,7 @@
 
 namespace vi {
 	class TaskScheduler;
+	class SFUListenerInterface;
 	class WebRTCService
 		: public WebRTCServiceInterface
 		, public ISFUClientListener
@@ -24,7 +25,7 @@ namespace vi {
 
 		~WebRTCService() override;
 
-		void init(std::shared_ptr<ISFUClient> client) override;
+		void init() override;
 
 		void cleanup() override;
 
@@ -143,6 +144,8 @@ namespace vi {
 		bool _reconnect = false;
 
 		std::unordered_map<int64_t, std::shared_ptr<IWebRTCEventHandler>> _wrehs;
+
+		std::shared_ptr<SFUListenerInterface> _proxy;
 
 		std::shared_ptr<ISFUClient> _client;
 

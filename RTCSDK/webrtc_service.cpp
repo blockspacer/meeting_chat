@@ -23,6 +23,7 @@
 #include "service/app_instance.h"
 #include "task_scheduler.h"
 #include "rtc_base/thread.h"
+#include "sfu_listener_proxy.h"
 #include <QDebug>
 
 namespace vi {
@@ -43,9 +44,16 @@ namespace vi {
 		qDebug() << "~WebRTCService";
 	}
 
-	void WebRTCService::init(std::shared_ptr<ISFUClient> client)
+	void WebRTCService::init()
 	{
-		_client = client;
+		rtc::Thread* current = rtc::Thread::Current();
+
+		auto listener = std::make_shared<SFUListener>();
+		_proxy = vi::SFUListenerProxy::Create(current, listener);
+		_proxy->init(shared_from_this());
+
+		_client = std::make_shared<vi::JanusClient>("ws://106.13.6.35:8188/janus");
+		_client->addListener(_proxy);
 
 		_client->init();
 

@@ -11,6 +11,10 @@ namespace vi {
 	ThreadManager::~ThreadManager()
 	{
 		qDebug() << "~ThreadManager()";
+		for (const auto& thread : _threadsMap) {
+			thread.second->Stop();
+		}
+		_threadsMap.clear();
 	}
 
 	void ThreadManager::init() 
@@ -37,10 +41,10 @@ namespace vi {
 		return _mainThread;
 	}
 
-	std::shared_ptr<rtc::Thread> ThreadManager::getThread(ThreadName name)
+	rtc::Thread* ThreadManager::getThread(ThreadName name)
 	{
 		if (_threadsMap.find(name) != _threadsMap.end()) {
-			return _threadsMap[name];
+			return _threadsMap[name].get();
 		}
 
 		return nullptr;

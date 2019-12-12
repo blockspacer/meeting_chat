@@ -15,7 +15,7 @@ namespace vi {
 	public:
 		virtual ~WebRTCServiceInterface() {}
 
-		virtual void init(std::shared_ptr<ISFUClient> client) = 0;
+		virtual void init() = 0;
 
 		virtual void cleanup() = 0;
 

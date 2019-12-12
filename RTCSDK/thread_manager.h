@@ -23,7 +23,7 @@ namespace vi {
 
 		rtc::Thread* getMainThread();
 
-		std::shared_ptr<rtc::Thread> getThread(ThreadName name);
+		rtc::Thread* getThread(ThreadName name);
 
 	private:
 		std::unordered_map<ThreadName, std::shared_ptr<rtc::Thread>> _threadsMap;

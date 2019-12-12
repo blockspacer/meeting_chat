@@ -223,8 +223,8 @@ namespace vi {
 		});
 		event->answerOfferCallback = callback;
 		MediaConfig media;
-		media.audioRecv = false;
-		media.videoRecv = false;
+		media.audioRecv = true;
+		media.videoRecv = true;
 		media.audioSend = audioOn;
 		media.videoSend = true;
 		event->media = media;
@@ -258,5 +258,12 @@ namespace vi {
 														 _pluginContext->webrtcService.lock());
 
 		participant->attach();
+
+		auto wself = weak_from_this();
+		notifyObserver4Change<IVideoRoomListener>(_listeners, [wself, participant](const std::shared_ptr<IVideoRoomListener>& listener) {
+			if (auto self = wself.lock()) {
+				listener->onCreateParticipant(participant);
+			}
+		});
 	}
 }

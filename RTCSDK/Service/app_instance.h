@@ -8,10 +8,6 @@
 #include "Network/network_request_manager.h"
 #include "rtc_base/thread.h"
 
-namespace vi {
-	class SFUListenerInterface;
-}
-
 namespace core {
 
 class AppInstance : public IAppInstance, public core::Singleton<AppInstance>
@@ -47,9 +43,9 @@ private:
     friend class core::Singleton<AppInstance>;
     std::shared_ptr<IUnifiedFactory> _unifiedFactory;
 	std::shared_ptr<vi::WebRTCServiceInterface> _webrtcService;
-    std::shared_ptr<NetworkRequestManager> _networkRequestMgr;
-	std::shared_ptr<vi::ThreadManager> _threadMgr;
-	std::shared_ptr<vi::TaskQueueManager> _taskQueueMgr;
+    std::shared_ptr<NetworkRequestManager> _networkRequestManager;
+	std::shared_ptr<vi::ThreadManager> _threadManager;
+	std::shared_ptr<vi::TaskQueueManager> _taskQueueManager;
 };
 
 }

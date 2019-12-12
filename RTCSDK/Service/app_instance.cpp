@@ -20,20 +20,20 @@ AppInstance::~AppInstance()
 {
     qDebug() << "~AppInstance()";
 	_webrtcService = nullptr;
-	_threadMgr = nullptr;
-	_taskQueueMgr = nullptr;
+	_threadManager = nullptr;
+	_taskQueueManager = nullptr;
 }
 
 void AppInstance::initApp()
 {
-	if (!_threadMgr) {
-		_threadMgr = std::make_shared<vi::ThreadManager>();
-		_threadMgr->init();
+	if (!_threadManager) {
+		_threadManager = std::make_shared<vi::ThreadManager>();
+		_threadManager->init();
 	}
 
-	if (!_taskQueueMgr) {
-		_taskQueueMgr = std::make_shared<vi::TaskQueueManager>();
-		_taskQueueMgr->init();
+	if (!_taskQueueManager) {
+		_taskQueueManager = std::make_shared<vi::TaskQueueManager>();
+		_taskQueueManager->init();
 	}
 	
     this->getNetworkRequestManager()->init();
@@ -61,20 +61,20 @@ std::shared_ptr<IUnifiedFactory> AppInstance::getUnifiedFactory()
 
 std::shared_ptr<NetworkRequestManager> AppInstance::getNetworkRequestManager()
 {
-    if (!_networkRequestMgr) {
-		_networkRequestMgr = std::make_shared<NetworkRequestManager>();
+    if (!_networkRequestManager) {
+		_networkRequestManager = std::make_shared<NetworkRequestManager>();
     }
-    return _networkRequestMgr;
+    return _networkRequestManager;
 }
 
 std::shared_ptr<vi::ThreadManager> AppInstance::getThreadManager()
 {
-	return _threadMgr;
+	return _threadManager;
 }
 
 std::shared_ptr<vi::TaskQueueManager> AppInstance::getTaskQueueManager()
 {
-	return _taskQueueMgr;
+	return _taskQueueManager;
 }
 
 std::shared_ptr<vi::WebRTCServiceInterface> AppInstance::getWebrtcService()

@@ -3,16 +3,18 @@
 #include "plugin_client.h"
 #include "Service/observable.h"
 #include "i_video_room_listener.h"
+#include "video_room_listener_proxy.h"
 
 namespace vi {
 	class VideoRoom
 		: public PluginClient
-		, core::Observable
 	{
 	public:
 		VideoRoom(std::shared_ptr<WebRTCServiceInterface> wrs);
 
 		~VideoRoom();
+
+		void init();
 
 		void addListener(std::shared_ptr<IVideoRoomListener> listener);
 
@@ -55,6 +57,6 @@ namespace vi {
 	private:
 		std::map<int64_t, std::shared_ptr<PluginClient>> _participantsMap;
 
-		std::vector<std::weak_ptr<IVideoRoomListener>> _listeners;
+		std::shared_ptr<VideoRoomListenerProxy> _listenerProxy;
 	};
 }

@@ -3,6 +3,8 @@
 #include <QDebug>
 #include "participant.h"
 #include "x2struct.hpp"
+#include "thread_manager.h"
+#include "Service/app_instance.h"
 
 namespace vi {
 	VideoRoom::VideoRoom(std::shared_ptr<WebRTCServiceInterface> wrs)
@@ -19,14 +21,22 @@ namespace vi {
 		}
 	}
 
+	void VideoRoom::init()
+	{
+		// All callbacks are in main thread
+		rtc::Thread* mainThread = rtcApp->getThreadManager()->getMainThread();
+		auto listener = std::make_shared<VideoRoomListener>();
+		_listenerProxy = VideoRoomListenerProxy::Create(mainThread, listener);
+	}
+
 	void VideoRoom::addListener(std::shared_ptr<IVideoRoomListener> listener)
 	{
-		addBizObserver<IVideoRoomListener>(_listeners, listener);
+		_listenerProxy->attach(listener);
 	}
 
 	void VideoRoom::removeListener(std::shared_ptr<IVideoRoomListener> listener)
 	{
-		removeBizObserver<IVideoRoomListener>(_listeners, listener);
+		_listenerProxy->detach(listener);
 	}
 
 	void VideoRoom::onAttached(bool success)
@@ -51,6 +61,7 @@ namespace vi {
 
 	void VideoRoom::onWebrtcState(bool isActive, const std::string& reason) 
 	{
+		_listenerProxy->onCreateParticipant(nullptr);
 		qDebug() << "Janus says our WebRTC PeerConnection is " << (isActive ? "up" : "down") << " now";
 		if (isActive) {
 			ConfigBitrateRequest request;
@@ -259,11 +270,12 @@ namespace vi {
 
 		participant->attach();
 
-		auto wself = weak_from_this();
-		notifyObserver4Change<IVideoRoomListener>(_listeners, [wself, participant](const std::shared_ptr<IVideoRoomListener>& listener) {
-			if (auto self = wself.lock()) {
-				listener->onCreateParticipant(participant);
-			}
-		});
+		//auto wself = weak_from_this();
+		//notifyObserver4Change<IVideoRoomListener>(_listeners, [wself, participant](const std::shared_ptr<IVideoRoomListener>& listener) {
+		//	if (auto self = wself.lock()) {
+		//		listener->onCreateParticipant(participant);
+		//	}
+		//});
+		_listenerProxy->onCreateParticipant(participant);
 	}
 }

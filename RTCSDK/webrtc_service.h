@@ -127,20 +127,35 @@ namespace vi {
 
 	private:
 		std::string _server;	
+
 		std::string _token;
+
 		std::string _opaqueId;
+
 		std::string _apiSecret = "jacky";
+
 		bool _unifiedPlan = true;
+
 		std::vector<std::string> _iceServers;
+
 		bool _ipv6Support;
+
 		webrtc::PeerConnectionInterface::BundlePolicy _bundlePolicy;
+
 		webrtc::PeerConnectionInterface::IceTransportsType _iceTransportPolicy;
+
 		webrtc::PeerConnectionInterface::TlsCertPolicy _tlsCertPolicy;
+
 		bool _destroyOnUnload;
+
 		int64_t _sessionId = -1;
+
 		int32_t _keepAlivePeriod;
+
 		bool _connected = false;
+
 		int32_t _retries = 3;
+
 		bool _reconnect = false;
 
 		std::unordered_map<int64_t, std::shared_ptr<IWebRTCEventHandler>> _wrehs;

@@ -50,6 +50,7 @@ void UI::onStartButtonClicked()
 		//auto wrs = FetchService(vi::WebRTCServiceInterface);
 		auto wrs = rtcApp->getWebrtcService();
 		_vr = std::make_shared<vi::VideoRoom>(wrs);
+		_vr->init();
 	}
 	_vr->attach();
 }

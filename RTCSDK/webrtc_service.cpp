@@ -50,11 +50,10 @@ namespace vi {
 
 		auto listener = std::make_shared<SFUListener>();
 		_proxy = vi::SFUListenerProxy::Create(current, listener);
-		_proxy->init(shared_from_this());
+		_proxy->attach(shared_from_this());
 
 		_client = std::make_shared<vi::JanusClient>("ws://106.13.6.35:8188/janus");
 		_client->addListener(_proxy);
-
 		_client->init();
 
 		_taskScheduler = std::make_shared<vi::TaskScheduler>();

@@ -126,7 +126,7 @@
     <QtMoc Include="gl_video_renderer.h" />
     <ClInclude Include="gl_video_shader.h" />
     <ClInclude Include="gl_defines.h" />
-    <ClInclude Include="video_room_proxy.h" />
+    <ClInclude Include="video_room_listener_proxy.h" />
     <ClInclude Include="helper_utils.h" />
     <ClInclude Include="i420_texture_cache.h" />
     <ClInclude Include="i_message_transport_listener.h" />

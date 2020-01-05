@@ -52,7 +52,7 @@ namespace vi {
 		_proxy = vi::SFUListenerProxy::Create(current, listener);
 		_proxy->attach(shared_from_this());
 
-		_client = std::make_shared<vi::JanusClient>("ws://106.13.6.35:8188/janus");
+		_client = std::make_shared<vi::JanusClient>("ws://192.168.1.7:8188/janus");
 		_client->addListener(_proxy);
 		_client->init();
 

@@ -61,7 +61,6 @@ namespace vi {
 
 	void VideoRoom::onWebrtcState(bool isActive, const std::string& reason) 
 	{
-		_listenerProxy->onCreateParticipant(nullptr);
 		qDebug() << "Janus says our WebRTC PeerConnection is " << (isActive ? "up" : "down") << " now";
 		if (isActive) {
 			ConfigBitrateRequest request;

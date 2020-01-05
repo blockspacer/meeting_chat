@@ -132,7 +132,7 @@ namespace vi {
 
 		std::string _opaqueId;
 
-		std::string _apiSecret = "jacky";
+		std::string _apiSecret = "";
 
 		bool _unifiedPlan = true;
 

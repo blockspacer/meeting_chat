@@ -261,7 +261,9 @@ namespace vi {
 		// the tone finished playing.
 		void OnToneChange(const std::string& tone, const std::string& tone_buffer) override 
 		{
-
+			if (_toneChangeCallback) {
+				(*_toneChangeCallback)(tone, tone_buffer);
+			}
 		}
 
 	private:

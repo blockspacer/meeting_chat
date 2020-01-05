@@ -113,10 +113,15 @@
     </QtRcc>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="gallery_view.cpp" />
     <ClCompile Include="main_qt.cpp" />
     <ClCompile Include="ui.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="gallery_view.ui">
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles\ui_%(Filename).h</OutputFile>
+      <OutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\ui_%(Filename).h</OutputFile>
+    </QtUic>
     <QtUic Include="ui.ui" />
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +132,12 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="ui.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="gallery_view.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;$(QTDIR)\include\QtNetwork;$(QTDIR)\include\QtWebsockets;.\..\webrtc\include\webrtc;.\..\webrtc\include\third_party\libyuv\include;.\..\include;.\..\include\asio\include;.\..\include\websocketpp;.\..\include\x2struct;.\..\RTCCore;.\..\RTCSDK;$(QTDIR)\include\QtOpenGL;.\..\glew\include</IncludePath>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName);$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;.\..\webrtc\include\webrtc;.\..\webrtc\include\third_party\libyuv\include;.\..\include;.\..\include\asio\include;.\..\include\websocketpp;.\..\include\x2struct;.\..\RTCCore;.\..\RTCSDK;$(QTDIR)\include\QtOpenGL</IncludePath>
+    </QtMoc>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

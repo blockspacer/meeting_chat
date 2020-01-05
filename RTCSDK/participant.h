@@ -47,6 +47,7 @@ namespace vi {
 		bool _videoOn;
 		bool _audioOn;
 		std::string _displayName;
+		std::weak_ptr<rtc::VideoSinkInterface<webrtc::VideoFrame>> _renderer;
 	};
 }
 

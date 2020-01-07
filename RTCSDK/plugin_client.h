@@ -25,9 +25,9 @@ namespace vi {
 		// IPluginClient
 		void attach() override;
 
-		int32_t getRemoteVolume() override;
+		int32_t remoteVolume() override;
 
-		int32_t getLocalVolume() override;
+		int32_t localVolume() override;
 
 		bool isAudioMuted() override;
 

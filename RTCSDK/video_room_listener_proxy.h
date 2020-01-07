@@ -20,7 +20,11 @@ namespace vi {
 
 		void onUpdateParticipant(std::shared_ptr<Participant> participant) override {}
 
-		void onRemoveParticipant(std::shared_ptr<Participant> participant) override {}
+		void onDeleteParticipant(std::shared_ptr<Participant> participant) override {}
+
+		void onCreateStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override {}
+
+		void onDeleteStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override {}
 	};
 
 	class VideoRoomListener : public VideoRoomListenerInterface {
@@ -62,10 +66,26 @@ namespace vi {
 			}
 		}
 
-		void onRemoveParticipant(std::shared_ptr<Participant> participant) override {
+		void onDeleteParticipant(std::shared_ptr<Participant> participant) override {
 			for (const auto& listener : _listeners) {
 				if (auto l = listener.lock()) {
-					l->onRemoveParticipant(participant);
+					l->onDeleteParticipant(participant);
+				}
+			}
+		}
+
+		void onCreateStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override {
+			for (const auto& listener : _listeners) {
+				if (auto l = listener.lock()) {
+					l->onCreateStream(pid, stream);
+				}
+			}
+		}
+
+		void onDeleteStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override {
+			for (const auto& listener : _listeners) {
+				if (auto l = listener.lock()) {
+					l->onDeleteStream(pid, stream);
 				}
 			}
 		}
@@ -87,6 +107,8 @@ namespace vi {
 		WEAK_PROXY_METHOD0(void, detachAll)
 		WEAK_PROXY_METHOD1(void, onCreateParticipant, std::shared_ptr<Participant>)
 		WEAK_PROXY_METHOD1(void, onUpdateParticipant, std::shared_ptr<Participant>)
-		WEAK_PROXY_METHOD1(void, onRemoveParticipant, std::shared_ptr<Participant>)
+		WEAK_PROXY_METHOD1(void, onDeleteParticipant, std::shared_ptr<Participant>)
+		WEAK_PROXY_METHOD2(void, onCreateStream, int64_t, rtc::scoped_refptr<webrtc::MediaStreamInterface>)
+		WEAK_PROXY_METHOD2(void, onDeleteStream, int64_t, rtc::scoped_refptr<webrtc::MediaStreamInterface>)
 	END_WEAK_PROXY_MAP()
 }

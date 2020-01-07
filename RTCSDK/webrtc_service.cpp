@@ -37,10 +37,24 @@ namespace vi {
 
 	WebRTCService::~WebRTCService()
 	{
+		if (_signaling) {
+			_signaling->Stop();
+		}
+
+		if (_worker) {
+			_worker->Stop();
+		}
+
+		if (_network) {
+			_network->Stop();
+		}
+
 		_pcf = nullptr;
+
 		if (_taskScheduler) {
 			_taskScheduler->cancelAll();
 		}
+
 		qDebug() << "~WebRTCService";
 	}
 
@@ -52,17 +66,26 @@ namespace vi {
 		_proxy = vi::SFUListenerProxy::Create(current, listener);
 		_proxy->attach(shared_from_this());
 
-		_client = std::make_shared<vi::JanusClient>("ws://192.168.1.7:8188/janus");
+		_client = std::make_shared<vi::JanusClient>("ws://106.13.6.35:8188/janus");
 		_client->addListener(_proxy);
 		_client->init();
 
 		_taskScheduler = std::make_shared<vi::TaskScheduler>();
 
+		_signaling = rtc::Thread::Create();
+		_signaling->SetName("signaling_thread", nullptr);
+		_signaling->Start();
+		_worker = rtc::Thread::Create();
+		_worker->SetName("worker_thread", nullptr);
+		_worker->Start();
+		_network = rtc::Thread::CreateWithSocketServer();
+		_network->SetName("network_thread", nullptr);
+		_network->Start();
 		if (!_pcf) {
 			_pcf = webrtc::CreatePeerConnectionFactory(
-				nullptr /* network_thread */,
-				nullptr /* worker_thread */,
-				nullptr /* signaling_thread */,
+				_network.get() /* network_thread */,
+				_worker.get() /* worker_thread */,
+				_signaling.get() /* signaling_thread */,
 				nullptr /* default_adm */,
 				webrtc::CreateBuiltinAudioEncoderFactory(),
 				webrtc::CreateBuiltinAudioDecoderFactory(),
@@ -157,12 +180,12 @@ namespace vi {
 		return 0;
 	}
 
-	int32_t WebRTCService::getRemoteVolume(int64_t handleId)
+	int32_t WebRTCService::remoteVolume(int64_t handleId)
 	{
 		return getVolume(handleId, true);
 	}
 
-	int32_t WebRTCService::getLocalVolume(int64_t handleId)
+	int32_t WebRTCService::localVolume(int64_t handleId)
 	{
 		return getVolume(handleId, false);
 	}
@@ -1308,7 +1331,7 @@ namespace vi {
 			});
 			context->pcObserver->setIceCandidateCallback(iccb);
 
-			auto tcb = std::make_shared<TrackCallback>([wwreh, wself, event](rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver) {
+			auto atcb = std::make_shared<AddTrackCallback>([wwreh, wself, event](rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver) {
 				auto self = wself.lock();
 				auto wreh = wwreh.lock();
 				if (!self || !wreh) {
@@ -1317,11 +1340,24 @@ namespace vi {
 				//auto handleId = wreh->pluginContext()->handleId;
 				auto& context = wreh->pluginContext()->webrtcContext;
 				context->remoteStream = transceiver->receiver()->streams()[0];
-				wreh->onRemoteStream(context->remoteStream);
+				wreh->onCreateRemoteStream(context->remoteStream);
 			});
-			context->pcObserver->setTrackCallback(tcb);
+			context->pcObserver->setAddTrackCallback(atcb);
 
-			
+			auto rtcb = std::make_shared<RemoveTrackCallback>([wwreh, wself, event](rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver) {
+				auto self = wself.lock();
+				auto wreh = wwreh.lock();
+				if (!self || !wreh) {
+					return;
+				}
+				//auto handleId = wreh->pluginContext()->handleId;
+				auto& context = wreh->pluginContext()->webrtcContext;
+				if (context->remoteStream && !receiver->streams().empty() && (receiver->streams()[0]->id() == context->remoteStream->id())) {
+					wreh->onDeleteRemoteStream(context->remoteStream);
+					context->remoteStream = nullptr;
+				}
+			});
+			context->pcObserver->setRemoveTrackCallback(rtcb);
 
 			context->pc = _pcf->CreatePeerConnection(pcConfig, nullptr, nullptr, context->pcObserver.get());
 
@@ -1386,7 +1422,7 @@ namespace vi {
 			}
 
 			if (context->myStream) {
-				wreh->onLocalStream(context->myStream);
+				wreh->onCreateLocalStream(context->myStream);
 			}
 
 			if (event->jsep == absl::nullopt) {

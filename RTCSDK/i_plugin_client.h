@@ -10,9 +10,9 @@ namespace vi {
 
 		virtual void attach() = 0;
 
-		virtual int32_t getRemoteVolume() = 0;
+		virtual int32_t remoteVolume() = 0;
 
-		virtual int32_t getLocalVolume() = 0;
+		virtual int32_t localVolume() = 0;
 
 		virtual bool isAudioMuted() = 0;
 

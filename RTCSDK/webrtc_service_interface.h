@@ -31,9 +31,9 @@ namespace vi {
 
 		virtual void reconnect() = 0;
 
-		virtual int32_t getRemoteVolume(int64_t handleId) = 0;
+		virtual int32_t remoteVolume(int64_t handleId) = 0;
 
-		virtual int32_t getLocalVolume(int64_t handleId) = 0;
+		virtual int32_t localVolume(int64_t handleId) = 0;
 
 		virtual bool isAudioMuted(int64_t handleId) = 0;
 

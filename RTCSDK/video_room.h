@@ -20,6 +20,8 @@ namespace vi {
 
 		void removeListener(std::shared_ptr<IVideoRoomListener> listener);
 
+		std::shared_ptr<PluginClient> getParticipant(int64_t pid);
+
 	protected:
 		void onAttached(bool success) override;
 
@@ -35,9 +37,13 @@ namespace vi {
 
 		void onMessage(const EventData& data, const Jsep& jsep) override;
 
-		void onLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+		void onCreateLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
 
-		void onRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+		void onDeleteLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+
+		void onCreateRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+
+		void onDeleteRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
 
 		void onData(const std::string& data, const std::string& label) override;
 

@@ -1,6 +1,5 @@
 #include "participant.h"
 #include <QDebug>
-#include "Thread/async.h"
 
 namespace vi {
 	Participant::Participant(const std::string& plugin, 
@@ -20,6 +19,11 @@ namespace vi {
 
 	Participant::~Participant()
 	{
+	}
+
+	void Participant::setListenerProxy(std::weak_ptr<VideoRoomListenerProxy> proxy)
+	{
+		_listenerProxy = proxy;
 	}
 
 	void Participant::onAttached(bool success)
@@ -132,14 +136,27 @@ namespace vi {
 		}
 	}
 
-	void Participant::onLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
+	void Participant::onCreateLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
 
-	void Participant::onRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) 
+	void Participant::onDeleteLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
+
+	void Participant::onCreateRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) 
 	{
-		// TODO: render
-		if (auto renderer = _renderer.lock()) {
-			rtc::VideoSinkWants wants;
-			stream->GetVideoTracks()[0]->AddOrUpdateSink(renderer.get(), wants);
+		//// TODO: render
+		//if (auto renderer = _renderer.lock()) {
+		//	rtc::VideoSinkWants wants;
+		//	stream->GetVideoTracks()[0]->AddOrUpdateSink(renderer.get(), wants);
+		//}
+
+		if (auto listener = _listenerProxy.lock()) {
+			listener->onCreateStream(_id, stream);
+		}
+	}
+
+	void Participant::onDeleteRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
+	{
+		if (auto listener = _listenerProxy.lock()) {
+			listener->onDeleteStream(_id, stream);
 		}
 	}
 

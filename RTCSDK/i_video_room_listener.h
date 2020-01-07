@@ -13,6 +13,10 @@ namespace vi {
 
 		virtual void onUpdateParticipant(std::shared_ptr<Participant> participant) = 0;
 
-		virtual void onRemoveParticipant(std::shared_ptr<Participant> participant) = 0;
+		virtual void onDeleteParticipant(std::shared_ptr<Participant> participant) = 0;
+
+		virtual void onCreateStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
+
+		virtual void onDeleteStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
 	};
 }

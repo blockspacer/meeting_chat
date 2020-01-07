@@ -1,6 +1,7 @@
 #pragma once
 
 #include "plugin_client.h"
+#include "video_room_listener_proxy.h"
 
 namespace vi {
 	class Participant
@@ -15,6 +16,8 @@ namespace vi {
 			std::shared_ptr<WebRTCServiceInterface> wrs);
 
 		~Participant();
+
+		void setListenerProxy(std::weak_ptr<VideoRoomListenerProxy> proxy);
 
 	protected:
 		void onAttached(bool success) override;
@@ -31,9 +34,13 @@ namespace vi {
 
 		void onMessage(const EventData& data, const Jsep& jsep) override;
 
-		void onLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+		void onCreateLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
 
-		void onRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+		void onDeleteLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+
+		void onCreateRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
+
+		void onDeleteRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) override;
 
 		void onData(const std::string& data, const std::string& label) override;
 
@@ -48,6 +55,8 @@ namespace vi {
 		bool _audioOn;
 		std::string _displayName;
 		std::weak_ptr<rtc::VideoSinkInterface<webrtc::VideoFrame>> _renderer;
+
+		std::weak_ptr<VideoRoomListenerProxy> _listenerProxy;
 	};
 }
 

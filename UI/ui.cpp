@@ -20,21 +20,22 @@
 #include "pc/video_track_source.h"
 #include "local_video_capture.h"
 #include "gl_video_renderer.h"
+#include "participant.h"
 
 UI::UI(QWidget *parent)
 	: QMainWindow(parent)
 {
 	ui.setupUi(this);
-	connect(ui.pushButtonStart, &QPushButton::clicked, this, &UI::onStartButtonClicked);
-	connect(ui.pushButtonRegister, &QPushButton::clicked, this, &UI::onRegisterButtonClicked);
+	connect(ui.actionStart, &QAction::triggered, this, &UI::onActionStartTriggered);
+	connect(ui.actionRegister, &QAction::triggered, this, &UI::onActionRegisterTriggered);
 }
 
 void UI::init()
 {
-	//_renderer = std::make_shared<GLVideoRenderer>(this);
-	//_renderer->init();
-	//this->setCentralWidget(_renderer.get());
-	//_renderer->show();
+	_renderer = std::make_shared<GLVideoRenderer>(this);
+	_renderer->init();
+	this->setCentralWidget(_renderer.get());
+	_renderer->show();
 }
 
 void UI::onStatus(vi::ServiceStauts status)
@@ -44,24 +45,58 @@ void UI::onStatus(vi::ServiceStauts status)
 	}
 }
 
-void UI::onStartButtonClicked()
+void UI::onCreateParticipant(std::shared_ptr<vi::Participant> participant)
+{
+
+}
+
+void UI::onUpdateParticipant(std::shared_ptr<vi::Participant> participant)
+{
+
+}
+
+void UI::onDeleteParticipant(std::shared_ptr<vi::Participant> participant)
+{
+
+}
+
+void UI::onCreateStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
+{
+	//auto videoTrack = stream->FindVideoTrack("video_label");
+	rtc::VideoSinkWants wants;
+	for (auto videoTrack : stream->GetVideoTracks()) {
+	videoTrack->AddOrUpdateSink(_renderer.get(), wants);
+	}
+}
+
+void UI::onDeleteStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
+{
+}
+
+void UI::onActionStartTriggered()
 {
 	if (!_vr) {
 		//auto wrs = FetchService(vi::WebRTCServiceInterface);
 		auto wrs = rtcApp->getWebrtcService();
 		_vr = std::make_shared<vi::VideoRoom>(wrs);
 		_vr->init();
+		_vr->addListener(shared_from_this());
 	}
 	_vr->attach();
 }
 
-void UI::onRegisterButtonClicked()
+void UI::onActionNameTriggered()
+{
+
+}
+
+void UI::onActionRegisterTriggered()
 {
 	vi::RegisterRequest request;
 	request.request = "join";
 	request.room = 1234;
 	request.ptype = "publisher";
-	request.display = ui.lineEditUserName->text().toStdString();
+	request.display = "dfaa";// ui.lineEditUserName->text().toStdString();
 
 	if (_vr) {
 		std::shared_ptr<vi::SendMessageEvent> event = std::make_shared<vi::SendMessageEvent>();
@@ -74,3 +109,4 @@ void UI::onRegisterButtonClicked()
 		_vr->sendMessage(event);
 	}
 }
+

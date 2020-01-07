@@ -39,6 +39,16 @@ namespace vi {
 		_listenerProxy->detach(listener);
 	}
 
+	std::shared_ptr<PluginClient> VideoRoom::getParticipant(int64_t pid)
+	{
+		if (pid == this->_id) {
+			return shared_from_this();
+		}
+		else {
+			return _participantsMap.find(pid) == _participantsMap.end() ? nullptr : _participantsMap[pid];
+		}
+	}
+
 	void VideoRoom::onAttached(bool success)
 	{
 		if (success) {
@@ -182,11 +192,19 @@ namespace vi {
 		}
 	}
 
-	void VideoRoom::onLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
+	void VideoRoom::onCreateLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
 	{
+		_listenerProxy->onCreateStream(_id, stream);
 	}
 
-	void VideoRoom::onRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
+	void VideoRoom::onDeleteLocalStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
+	{
+		_listenerProxy->onDeleteStream(_id, stream);
+	}
+
+	void VideoRoom::onCreateRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
+
+	void VideoRoom::onDeleteRemoteStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
 
 	void VideoRoom::onData(const std::string& data, const std::string& label) {}
 
@@ -268,13 +286,8 @@ namespace vi {
 														 _pluginContext->webrtcService.lock());
 
 		participant->attach();
-
-		//auto wself = weak_from_this();
-		//notifyObserver4Change<IVideoRoomListener>(_listeners, [wself, participant](const std::shared_ptr<IVideoRoomListener>& listener) {
-		//	if (auto self = wself.lock()) {
-		//		listener->onCreateParticipant(participant);
-		//	}
-		//});
+		participant->setListenerProxy(_listenerProxy);
+		_participantsMap[id] = participant;
 		_listenerProxy->onCreateParticipant(participant);
 	}
 }

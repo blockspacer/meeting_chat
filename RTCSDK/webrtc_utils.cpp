@@ -22,9 +22,14 @@ namespace vi {
 		_dataChannelCallback = callback;
 	}
 
-	void PCObserver::setTrackCallback(std::shared_ptr<TrackCallback> callback)
+	void PCObserver::setAddTrackCallback(std::shared_ptr<AddTrackCallback> callback)
 	{
-		_trackCallback = callback;
+		_addTrackCallback = callback;
+	}
+
+	void PCObserver::setRemoveTrackCallback(std::shared_ptr<RemoveTrackCallback> callback)
+	{
+		_removeTrackCallback = callback;
 	}
 
 	// Triggered when the SignalingState changed.
@@ -157,8 +162,8 @@ namespace vi {
 			qDebug() << "OnTrack, sender id: " << sender->id().c_str();
 		}
 
-		if (_trackCallback) {
-			(*_trackCallback)(transceiver);
+		if (_addTrackCallback) {
+			(*_addTrackCallback)(transceiver);
 		}
 	}
 
@@ -174,6 +179,10 @@ namespace vi {
 	{
 		if (receiver) {
 			qDebug() << "OnRemoveTrack, receiver id: " << receiver->id().c_str();
+		}
+
+		if (_removeTrackCallback) {
+			(*_removeTrackCallback)(receiver);
 		}
 	}
 }

@@ -44,9 +44,9 @@ namespace vi {
 
 		void reconnect() override;
 
-		int32_t getRemoteVolume(int64_t handleId) override;
+		int32_t remoteVolume(int64_t handleId) override;
 
-		int32_t getLocalVolume(int64_t handleId) override;
+		int32_t localVolume(int64_t handleId) override;
 
 		bool isAudioMuted(int64_t handleId) override;
 
@@ -132,7 +132,7 @@ namespace vi {
 
 		std::string _opaqueId;
 
-		std::string _apiSecret = "";
+		std::string _apiSecret = "jacky";
 
 		bool _unifiedPlan = true;
 
@@ -173,6 +173,10 @@ namespace vi {
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> _pcf;
 
 		uint64_t _heartbeatTaskId = 0;
+
+		std::unique_ptr<rtc::Thread> _signaling;
+		std::unique_ptr<rtc::Thread> _worker;
+		std::unique_ptr<rtc::Thread> _network;
 	};
 }
 

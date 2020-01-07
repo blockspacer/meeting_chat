@@ -112,7 +112,8 @@ namespace vi {
 	using IceGatheringChangeCallback = std::function<void(webrtc::PeerConnectionInterface::IceGatheringState new_state)> ;
 	using IceCandidateCallback = std::function<void(const webrtc::IceCandidateInterface* candidate)>;
 	using DataChannelCallback = std::function<void(rtc::scoped_refptr<webrtc::DataChannelInterface> data_channel)>;
-	using TrackCallback = std::function<void(rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver)>;
+	using AddTrackCallback = std::function<void(rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver)>;
+	using RemoveTrackCallback = std::function<void(rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver)>;
 
 	class PCObserver : public webrtc::PeerConnectionObserver {
 	public:
@@ -124,7 +125,9 @@ namespace vi {
 
 		void setDataChannelCallback(std::shared_ptr<DataChannelCallback> callback);
 
-		void setTrackCallback(std::shared_ptr<TrackCallback> callback);
+		void setAddTrackCallback(std::shared_ptr<AddTrackCallback> callback);
+
+		void setRemoveTrackCallback(std::shared_ptr<RemoveTrackCallback> callback);
 
 	protected:
 		// Triggered when the SignalingState changed.
@@ -207,7 +210,8 @@ namespace vi {
 		std::shared_ptr<IceGatheringChangeCallback> _iceGatheringChangeCallback;
 		std::shared_ptr<IceCandidateCallback> _iceCandidateCallback;
 		std::shared_ptr<DataChannelCallback> _dataChannelCallback;
-		std::shared_ptr<TrackCallback> _trackCallback;
+		std::shared_ptr<AddTrackCallback> _addTrackCallback;
+		std::shared_ptr<RemoveTrackCallback> _removeTrackCallback;
 	};	
 
 	using StateChangeCallback = std::function<void()>;

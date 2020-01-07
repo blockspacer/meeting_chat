@@ -29,21 +29,21 @@ namespace vi {
 		}
 	}
 
-	int32_t PluginClient::getRemoteVolume()
+	int32_t PluginClient::remoteVolume()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				return wrs->getRemoteVolume(_pluginContext->handleId);
+				return wrs->remoteVolume(_pluginContext->handleId);
 			}
 		}
 		return 0;
 	}
 
-	int32_t PluginClient::getLocalVolume()
+	int32_t PluginClient::localVolume()
 	{
 		if (auto wrs = _pluginContext->webrtcService.lock()) {
 			if (wrs->status() == ServiceStauts::UP) {
-				return wrs->getLocalVolume(_pluginContext->handleId);
+				return wrs->localVolume(_pluginContext->handleId);
 			}
 		}
 		return 0;

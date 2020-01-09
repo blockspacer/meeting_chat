@@ -14,6 +14,7 @@
 namespace vi {
 	class TaskScheduler;
 	class SFUListenerInterface;
+	class CapturerTrackSource;
 	class WebRTCService
 		: public WebRTCServiceInterface
 		, public ISFUClientListener
@@ -177,6 +178,7 @@ namespace vi {
 		std::unique_ptr<rtc::Thread> _signaling;
 		std::unique_ptr<rtc::Thread> _worker;
 		std::unique_ptr<rtc::Thread> _network;
+		rtc::scoped_refptr<CapturerTrackSource> _videoDevice;
 	};
 }
 

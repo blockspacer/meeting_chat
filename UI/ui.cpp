@@ -30,12 +30,17 @@ UI::UI(QWidget *parent)
 	connect(ui.actionRegister, &QAction::triggered, this, &UI::onActionRegisterTriggered);
 }
 
+UI::~UI()
+{
+	if (_galleryView) {
+		_galleryView->removeAll();
+	}
+}
+
 void UI::init()
 {
-	_renderer = std::make_shared<GLVideoRenderer>(this);
-	_renderer->init();
-	this->setCentralWidget(_renderer.get());
-	_renderer->show();
+	_galleryView = new GalleryView(this);
+	setCentralWidget(_galleryView);
 }
 
 void UI::onStatus(vi::ServiceStauts status)
@@ -62,10 +67,18 @@ void UI::onDeleteParticipant(std::shared_ptr<vi::Participant> participant)
 
 void UI::onCreateStream(int64_t pid, rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)
 {
-	//auto videoTrack = stream->FindVideoTrack("video_label");
 	rtc::VideoSinkWants wants;
-	for (auto videoTrack : stream->GetVideoTracks()) {
-	videoTrack->AddOrUpdateSink(_renderer.get(), wants);
+	for (auto track : stream->GetVideoTracks()) {
+		GLVideoRenderer* renderer = new GLVideoRenderer(_galleryView);
+		renderer->init();
+		renderer->show();
+
+		// TODO:
+		static int64_t id = -1;
+		std::shared_ptr<ContentView> view = std::make_shared<ContentView>(++id, track, renderer);
+		view->init();
+
+		_galleryView->insertView(view);
 	}
 }
 
@@ -107,6 +120,14 @@ void UI::onActionRegisterTriggered()
 		event->message = x2struct::X::tojson(request);
 		event->callback = callback;
 		_vr->sendMessage(event);
+	}
+}
+
+void UI::closeEvent(QCloseEvent* event)
+{
+	//_vr->hangup(true);
+	if (_galleryView) {
+		_galleryView->removeAll();
 	}
 }
 

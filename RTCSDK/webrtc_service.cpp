@@ -37,6 +37,8 @@ namespace vi {
 
 	WebRTCService::~WebRTCService()
 	{
+		_pcf = nullptr;
+
 		if (_signaling) {
 			_signaling->Stop();
 		}
@@ -48,8 +50,6 @@ namespace vi {
 		if (_network) {
 			_network->Stop();
 		}
-
-		_pcf = nullptr;
 
 		if (_taskScheduler) {
 			_taskScheduler->cancelAll();
@@ -72,16 +72,16 @@ namespace vi {
 
 		_taskScheduler = std::make_shared<vi::TaskScheduler>();
 
-		_signaling = rtc::Thread::Create();
-		_signaling->SetName("signaling_thread", nullptr);
-		_signaling->Start();
-		_worker = rtc::Thread::Create();
-		_worker->SetName("worker_thread", nullptr);
-		_worker->Start();
-		_network = rtc::Thread::CreateWithSocketServer();
-		_network->SetName("network_thread", nullptr);
-		_network->Start();
 		if (!_pcf) {
+			_signaling = rtc::Thread::Create();
+			_signaling->SetName("pc_signaling_thread", nullptr);
+			_signaling->Start();
+			_worker = rtc::Thread::Create();
+			_worker->SetName("pc_worker_thread", nullptr);
+			_worker->Start();
+			_network = rtc::Thread::CreateWithSocketServer();
+			_network->SetName("pc_network_thread", nullptr);
+			_network->Start();
 			_pcf = webrtc::CreatePeerConnectionFactory(
 				_network.get() /* network_thread */,
 				_worker.get() /* worker_thread */,
@@ -98,14 +98,14 @@ namespace vi {
 
 	void WebRTCService::cleanup()
 	{
-		auto handler = std::make_shared<DestroySessionEvent>();
-		handler->notifyDestroyed = true;
-		handler->cleanupHandles = true;
-		handler->callback = std::make_shared<EventCallback>([](bool success, const std::string& reason) {
+		auto event = std::make_shared<DestroySessionEvent>();
+		event->notifyDestroyed = true;
+		event->cleanupHandles = true;
+		event->callback = std::make_shared<EventCallback>([](bool success, const std::string& reason) {
 			qDebug() << "destroy, success = " << success << ", reason = " << reason.c_str();
 		});
-		this->destroy(handler);
-		_pcf = nullptr;
+		this->destroy(event);
+		//_pcf = nullptr;
 	}
 
 	// IWebRTCService implement
@@ -744,18 +744,16 @@ namespace vi {
 		}
 		if (HelperUtils::isAudioSendEnabled(media) || HelperUtils::isVideoSendEnabled(media)) {
 			rtc::scoped_refptr<webrtc::MediaStreamInterface> mstream = _pcf->CreateLocalMediaStream("stream_id");
-			rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack(
-				_pcf->CreateAudioTrack("audio_label", _pcf->CreateAudioSource(cricket::AudioOptions())));
+			rtc::scoped_refptr<webrtc::AudioTrackInterface> audioTrack(_pcf->CreateAudioTrack("audio_label", _pcf->CreateAudioSource(cricket::AudioOptions())));
 			std::string id = audioTrack->id();
 			if (!mstream->AddTrack(audioTrack)) {
 				qDebug() << "Add audio track failed.";
 			}
 
 			// TODO: hold the videoDevice
-			rtc::scoped_refptr<CapturerTrackSource> videoDevice = CapturerTrackSource::Create();
-			if (videoDevice) {
-				rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack(
-					_pcf->CreateVideoTrack("video_label", videoDevice));
+			_videoDevice = CapturerTrackSource::Create();
+			if (_videoDevice) {
+				rtc::scoped_refptr<webrtc::VideoTrackInterface> videoTrack(_pcf->CreateVideoTrack("video_label", _videoDevice));
 
 				if (!mstream->AddTrack(videoTrack)) {
 					qDebug() << "Add video track failed.";

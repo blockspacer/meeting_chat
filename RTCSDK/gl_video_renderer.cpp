@@ -21,6 +21,9 @@ GLVideoRenderer::~GLVideoRenderer()
 
 void GLVideoRenderer::init()
 {
+	setAttribute(Qt::WA_StyledBackground, true);
+	setStyleSheet("background-color:rgb(255, 0, 255)");
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	_videoShader = std::make_shared<GLVideoShader>();
 }
 

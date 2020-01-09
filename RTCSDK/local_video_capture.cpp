@@ -83,7 +83,6 @@ namespace vi {
 		VideoCapturerBase::OnFrame(frame);
 	}
 
-
 	VideoCapturerBase::VideoCapturerBase() = default;
 
 	VideoCapturerBase::~VideoCapturerBase() = default;

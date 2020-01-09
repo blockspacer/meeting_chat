@@ -8,6 +8,8 @@
 #include "i_video_room_listener.h"
 #include "gl_video_renderer.h"
 #include "api/create_peerconnection_factory.h"
+#include "gallery_view.h"
+#include <QCloseEvent>
 
 namespace vi {
 	class Participant;
@@ -23,6 +25,8 @@ class UI
 
 public:
 	UI(QWidget *parent = Q_NULLPTR);
+
+	~UI();
 
 	void init();
 
@@ -50,8 +54,12 @@ private slots:
 
 	void onActionRegisterTriggered();
 
+	void closeEvent(QCloseEvent* event);
+
 private:
 	Ui::UIClass ui;
 
 	std::shared_ptr<vi::VideoRoom> _vr;
+
+	GalleryView* _galleryView;
 };

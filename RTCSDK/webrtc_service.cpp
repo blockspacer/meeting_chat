@@ -541,7 +541,7 @@ namespace vi {
 					media.removeAudio = false;
 					media.audioSend = true;
 				}
-				if (context->myStream) {
+				if (!context->myStream) {
 					// No media stream: if we were asked to replace, it's actually an "add"
 					if (media.replaceAudio) {
 						media.keepAudio = false;
@@ -603,7 +603,7 @@ namespace vi {
 					media.removeVideo = false;
 					media.videoSend = true;
 				}
-				if (context->myStream) {
+				if (!context->myStream) {
 					// No media stream: if we were asked to replace, it's actually an "add"
 					if (media.replaceVideo) {
 						media.keepVideo = false;

@@ -111,7 +111,8 @@ namespace vi {
 			_taskIdSet.clear();
 		}
 
-		const std::unordered_set<uint64_t> getTaskIds() const {
+		const std::unordered_set<uint64_t>& getTaskIds() {
+			std::lock_guard<std::mutex> lock(_mutex);
 			return _taskIdSet;
 		}
 
